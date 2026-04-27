@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ButlerClaw</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #f7f2ea;
+            --warm-white: #fdfaf4;
+            --ink: #1c1712;
+            --ink-light: #6b6050;
+            --red: #b83232;
+            --red-dark: #8f2222;
+            --gold: #c9940a;
+            --gold-light: #f5e6b8;
+            --gold-muted: #e8d48a;
+            --card-bg: #fffdf7;
+            --border: #e2d8c4;
+            --border-light: #ede5d2;
+            --sale: #1a6e3e;
+            --sale-bg: #e6f4ed;
+            --header-bg: #18140f;
+            --texture: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c9940a' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            background-image: var(--texture);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: var(--ink);
+        }
+
+        /* ── HEADER ── */
+        header {
+            background: var(--header-bg);
+            background-image: linear-gradient(135deg, #18140f 0%, #2a1f14 50%, #18140f 100%);
+            padding: 0 28px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            height: 72px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.35);
+            border-bottom: 1px solid rgba(201,148,10,0.2);
+        }
+
+        /* Gold shimmer line at very top */
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), var(--gold-muted), var(--gold), transparent);
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .butler-svg {
+            width: 46px;
+            height: 46px;
+            flex-shrink: 0;
+            filter: drop-shadow(0 2px 8px rgba(201,148,10,0.3));
+        }
+
+        .brand-text h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--warm-white);
+            letter-spacing: 0.04em;
+            line-height: 1;
+        }
+
+        .brand-text p {
+            font-size: 0.65rem;
+            color: var(--gold);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-top: 3px;
+            opacity: 0.85;
+        }
+
+        /* ── ZIP BAR ── */
+        .zip-bar {
+            background: var(--warm-white);
+            border-bottom: 1px solid var(--border-light);
+            padding: 9px 28px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: var(--ink-light);
+            box-shadow: 0 1px 0 rgba(201,148,10,0.08);
+        }
+
+        .zip-bar svg { opacity: 0.5; color: var(--gold); }
+
+        .zip-input {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 5px 12px;
+            width: 90px;
+            font-size: 0.85rem;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .zip-input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201,148,10,0.12);
+        }
+
+        /* ── CHAT AREA ── */
+        #chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 780px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* ── WELCOME ── */
+        .welcome {
+            text-align: center;
+            padding: 56px 24px 40px;
+            animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        .welcome-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            filter: drop-shadow(0 4px 16px rgba(201,148,10,0.2));
+        }
+
+        .welcome h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 12px;
+            letter-spacing: 0.01em;
+        }
+
+        .welcome p {
+            color: var(--ink-light);
+            font-size: 0.93rem;
+            font-weight: 300;
+            max-width: 380px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        /* ── BUBBLES ── */
+        .bubble-row {
+            display: flex;
+            animation: fadeUp 0.4s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        .bubble-row.user { justify-content: flex-end; }
+        .bubble-row.bot { justify-content: flex-start; }
+
+        .bubble {
+            max-width: 72%;
+            padding: 12px 18px;
+            border-radius: 20px;
+            font-size: 0.92rem;
+            line-height: 1.65;
+        }
+
+        .bubble.user {
+            background: linear-gradient(135deg, #2a1f14, var(--ink));
+            color: var(--warm-white);
+            border-bottom-right-radius: 5px;
+            font-weight: 400;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+        }
+
+        /* ── RESULT CARD ── */
+        .result-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            overflow: hidden;
+            max-width: 100%;
+            box-shadow: 0 8px 40px rgba(28,23,18,0.1), 0 1px 0 rgba(201,148,10,0.12);
+            animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        .result-card-header {
+            background: linear-gradient(135deg, #18140f 0%, #2e200f 100%);
+            padding: 16px 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(201,148,10,0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle shimmer on card header */
+        .result-card-header::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 120px; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(201,148,10,0.06));
+            pointer-events: none;
+        }
+
+        .result-card-header span {
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--warm-white);
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+        }
+
+        .result-intro {
+            padding: 14px 22px 10px;
+            color: var(--ink-light);
+            font-size: 0.87rem;
+            line-height: 1.7;
+            border-bottom: 1px solid var(--border-light);
+            background: linear-gradient(180deg, rgba(201,148,10,0.03) 0%, transparent 100%);
+            font-style: italic;
+        }
+
+        /* ── PRODUCT SECTIONS ── */
+        .product-section {
+            border-bottom: 1px solid var(--border-light);
+            transition: background 0.15s;
+        }
+
+        .product-section:last-child { border-bottom: none; }
+
+        .product-section:hover {
+            background: rgba(201,148,10,0.02);
+        }
+
+        .section-label {
+            padding: 14px 22px 5px;
+            font-size: 0.64rem;
+            font-weight: 500;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--gold);
+            opacity: 0.9;
+        }
+
+        .product-row {
+            padding: 8px 22px 16px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .product-info { flex: 1; }
+
+        .product-name {
+            font-size: 0.94rem;
+            font-weight: 500;
+            color: var(--ink);
+            line-height: 1.45;
+            margin-bottom: 3px;
+        }
+
+        .product-brand {
+            font-size: 0.75rem;
+            color: var(--ink-light);
+            font-weight: 300;
+            letter-spacing: 0.04em;
+        }
+
+        .product-price { text-align: right; flex-shrink: 0; }
+
+        .price-regular {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ink);
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .price-sale {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--sale);
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .price-was {
+            font-size: 0.73rem;
+            color: var(--ink-light);
+            text-decoration: line-through;
+            display: block;
+            opacity: 0.7;
+        }
+
+        .sale-badge {
+            display: inline-block;
+            background: var(--sale-bg);
+            color: var(--sale);
+            font-size: 0.62rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            padding: 2px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            margin-top: 4px;
+            border: 1px solid rgba(26,110,62,0.15);
+        }
+
+        /* ── TYPING INDICATOR ── */
+        .typing-row {
+            display: flex;
+            justify-content: flex-start;
+            animation: fadeUp 0.3s ease both;
+        }
+
+        .typing-bubble {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            border-bottom-left-radius: 5px;
+            padding: 14px 22px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+
+        .typing-text {
+            font-size: 0.8rem;
+            color: var(--ink-light);
+            font-style: italic;
+            margin-right: 6px;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            background: var(--gold);
+            border-radius: 50%;
+            animation: bounce 1.3s infinite;
+            opacity: 0.8;
+        }
+        .dot:nth-child(2) { animation-delay: 0.18s; }
+        .dot:nth-child(3) { animation-delay: 0.36s; }
+
+        /* ── INPUT BAR ── */
+        .input-bar-wrap {
+            background: var(--warm-white);
+            border-top: 1px solid var(--border-light);
+            position: sticky;
+            bottom: 0;
+            box-shadow: 0 -4px 24px rgba(28,23,18,0.07);
+        }
+
+        .input-bar {
+            background: transparent;
+            padding: 14px 28px;
+            display: flex;
+            gap: 10px;
+            max-width: 780px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        #msg {
+            flex: 1;
+            border: 1.5px solid var(--border);
+            border-radius: 28px;
+            padding: 12px 22px;
+            font-size: 0.94rem;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        #msg:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201,148,10,0.1);
+            background: var(--warm-white);
+        }
+
+        #msg::placeholder { color: #b8a98a; font-style: italic; }
+
+        #send-btn {
+            background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 28px;
+            padding: 12px 26px;
+            font-size: 0.9rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(184,50,50,0.3);
+            letter-spacing: 0.02em;
+        }
+
+        #send-btn:hover {
+            opacity: 0.92;
+            box-shadow: 0 6px 20px rgba(184,50,50,0.4);
+        }
+        #send-btn:active { transform: scale(0.97); }
+
+        /* ── VIEW BUTTON ── */
+        .view-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 8px;
+            padding: 6px 14px;
+            background: var(--gold-light);
+            border: 1px solid var(--gold-muted);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            color: #7a5800;
+            text-decoration: none;
+            transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .view-btn:hover {
+            background: var(--gold-muted);
+            border-color: var(--gold);
+            box-shadow: 0 2px 8px rgba(201,148,10,0.2);
+        }
+
+        /* ── STORE PICKER ── */
+        .store-picker {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(28,23,18,0.1);
+            animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+        }
+        .store-picker-header {
+            background: linear-gradient(135deg, #18140f 0%, #2e200f 100%);
+            padding: 16px 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(201,148,10,0.25);
+        }
+        .store-picker-header span {
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--warm-white);
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+        }
+        .store-picker-intro {
+            padding: 13px 22px;
+            color: var(--ink-light);
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--border-light);
+            font-style: italic;
+            background: linear-gradient(180deg, rgba(201,148,10,0.03) 0%, transparent 100%);
+        }
+        .store-option {
+            padding: 15px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-light);
+            gap: 14px;
+            transition: background 0.15s;
+        }
+        .store-option:last-child { border-bottom: none; }
+        .store-option:hover { background: rgba(201,148,10,0.03); }
+        .store-option-info { flex: 1; }
+        .store-option-name {
+            font-size: 0.92rem;
+            font-weight: 500;
+            color: var(--ink);
+            margin-bottom: 3px;
+        }
+        .store-option-address {
+            font-size: 0.76rem;
+            color: var(--ink-light);
+            letter-spacing: 0.02em;
+        }
+        .shop-here-btn {
+            background: linear-gradient(135deg, var(--red), var(--red-dark));
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-size: 0.8rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: opacity 0.2s, box-shadow 0.2s;
+            flex-shrink: 0;
+            box-shadow: 0 3px 12px rgba(184,50,50,0.25);
+            letter-spacing: 0.02em;
+        }
+        .shop-here-btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 4px 16px rgba(184,50,50,0.35);
+        }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.8; }
+            30%            { transform: translateY(-7px); opacity: 1; }
+        }
+
+        /* ── SCROLLBAR ── */
+        #chat::-webkit-scrollbar { width: 3px; }
+        #chat::-webkit-scrollbar-track { background: transparent; }
+        #chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        /* ── CART BUTTON ── */
+        .cart-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 6px;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, var(--red), var(--red-dark));
+            border: none;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            transition: opacity 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(184,50,50,0.25);
+        }
+        .cart-btn:hover { opacity: 0.9; box-shadow: 0 3px 12px rgba(184,50,50,0.35); }
+        .cart-btn.added {
+            background: linear-gradient(135deg, var(--sale), #155a33);
+            box-shadow: 0 2px 8px rgba(26,110,62,0.25);
+        }
+        .cart-btn.loading { opacity: 0.7; cursor: wait; }
+    </style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+    <div class="logo-wrap">
+        <!-- Butler with human head + crab body -->
+        <svg class="butler-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- CRAB BODY: wide oval shell -->
+            <ellipse cx="40" cy="56" rx="20" ry="13" fill="#c0392b"/>
+            <!-- Shell highlight -->
+            <ellipse cx="40" cy="52" rx="14" ry="7" fill="#e74c3c" opacity="0.6"/>
+            <!-- Shell segments -->
+            <path d="M26 56 Q40 50 54 56" stroke="#96281b" stroke-width="1" fill="none" opacity="0.5"/>
+            <path d="M28 61 Q40 56 52 61" stroke="#96281b" stroke-width="1" fill="none" opacity="0.5"/>
+            <!-- LEFT BIG CLAW -->
+            <path d="M22 52 Q10 48 6 44" stroke="#c0392b" stroke-width="5" stroke-linecap="round" fill="none"/>
+            <!-- Left claw pincers -->
+            <path d="M6 44 Q2 38 4 34" stroke="#c0392b" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            <path d="M6 44 Q0 44 0 40" stroke="#c0392b" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            <!-- Left claw tip detail -->
+            <circle cx="4" cy="34" r="2.5" fill="#96281b"/>
+            <circle cx="0" cy="40" r="2.5" fill="#96281b"/>
+            <!-- RIGHT BIG CLAW -->
+            <path d="M58 52 Q70 48 74 44" stroke="#c0392b" stroke-width="5" stroke-linecap="round" fill="none"/>
+            <!-- Right claw pincers -->
+            <path d="M74 44 Q78 38 76 34" stroke="#c0392b" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            <path d="M74 44 Q80 44 80 40" stroke="#c0392b" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            <!-- Right claw tip detail -->
+            <circle cx="76" cy="34" r="2.5" fill="#96281b"/>
+            <circle cx="80" cy="40" r="2.5" fill="#96281b"/>
+            <!-- Small walking legs left -->
+            <path d="M28 64 Q22 70 20 76" stroke="#96281b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <path d="M32 67 Q28 74 27 78" stroke="#96281b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <!-- Small walking legs right -->
+            <path d="M52 64 Q58 70 60 76" stroke="#96281b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <path d="M48 67 Q52 74 53 78" stroke="#96281b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <!-- Bow tie at neck join -->
+            <polygon points="36,40 40,43 36,46" fill="#2c2825"/>
+            <polygon points="44,40 40,43 44,46" fill="#2c2825"/>
+            <circle cx="40" cy="43" r="2" fill="#1a1814"/>
+            <!-- HEAD (unchanged) -->
+            <ellipse cx="40" cy="26" rx="13" ry="14" fill="#f5c9a0"/>
+            <!-- Hair -->
+            <ellipse cx="40" cy="14" rx="13" ry="6" fill="#2c2825"/>
+            <!-- Eyes -->
+            <ellipse cx="35" cy="25" rx="2" ry="2.2" fill="#2c2825"/>
+            <ellipse cx="45" cy="25" rx="2" ry="2.2" fill="#2c2825"/>
+            <!-- Eye shine -->
+            <circle cx="36" cy="24" r="0.7" fill="white"/>
+            <circle cx="46" cy="24" r="0.7" fill="white"/>
+            <!-- Smile -->
+            <path d="M35 31 Q40 35 45 31" stroke="#c0392b" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </svg>
+        <div class="brand-text">
+            <h1>ButlerClaw</h1>
+            <p>Your Personal Shopping Butler</p>
+        </div>
+    </div>
+</header>
+
+<!-- ── ZIP BAR ── -->
+<div class="zip-bar">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+    </svg>
+    Your zip code:
+    <input class="zip-input" type="text" id="zip" value="10001" maxlength="5" placeholder="10001"/>
+    <span style="color:#b0a898; font-size:0.78rem;">Finds your nearest Kroger-affiliated store</span>
+</div>
+
+<!-- ── CHAT ── -->
+<div id="chat">
+    <div class="welcome">
+        <svg class="welcome-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Soft glow background -->
+            <circle cx="40" cy="40" r="38" fill="#f5e6c0" opacity="0.5"/>
+            <!-- CRAB BODY -->
+            <ellipse cx="40" cy="56" rx="20" ry="13" fill="#c0392b"/>
+            <ellipse cx="40" cy="52" rx="14" ry="7" fill="#e74c3c" opacity="0.6"/>
+            <path d="M26 56 Q40 50 54 56" stroke="#96281b" stroke-width="1" fill="none" opacity="0.5"/>
+            <path d="M28 61 Q40 56 52 61" stroke="#96281b" stroke-width="1" fill="none" opacity="0.5"/>
+            <!-- LEFT CLAW -->
+            <path d="M22 52 Q10 48 6 44" stroke="#c0392b" stroke-width="5" stroke-linecap="round" fill="none"/>
+            <path d="M6 44 Q2 38 4 34" stroke="#c0392b" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            <path d="M6 44 Q0 44 0 40" stroke="#c0392b" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            <circle cx="4" cy="34" r="2.5" fill="#96281b"/>
+            <circle cx="0" cy="40" r="2.5" fill="#96281b"/>
+            <!-- RIGHT CLAW -->
+            <path d="M58 52 Q70 48 74 44" stroke="#c0392b" stroke-width="5" stroke-linecap="round" fill="none"/>
+            <path d="M74 44 Q78 38 76 34" stroke="#c0392b" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            <path d="M74 44 Q80 44 80 40" stroke="#c0392b" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            <circle cx="76" cy="34" r="2.5" fill="#96281b"/>
+            <circle cx="80" cy="40" r="2.5" fill="#96281b"/>
+            <!-- Walking legs -->
+            <path d="M28 64 Q22 70 20 76" stroke="#96281b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <path d="M32 67 Q28 74 27 78" stroke="#96281b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <path d="M52 64 Q58 70 60 76" stroke="#96281b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <path d="M48 67 Q52 74 53 78" stroke="#96281b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <!-- Bow tie -->
+            <polygon points="36,40 40,43 36,46" fill="#2c2825"/>
+            <polygon points="44,40 40,43 44,46" fill="#2c2825"/>
+            <circle cx="40" cy="43" r="2" fill="#1a1814"/>
+            <!-- HEAD -->
+            <ellipse cx="40" cy="26" rx="13" ry="14" fill="#f5c9a0"/>
+            <ellipse cx="40" cy="14" rx="13" ry="6" fill="#2c2825"/>
+            <ellipse cx="35" cy="25" rx="2" ry="2.2" fill="#2c2825"/>
+            <ellipse cx="45" cy="25" rx="2" ry="2.2" fill="#2c2825"/>
+            <circle cx="36" cy="24" r="0.7" fill="white"/>
+            <circle cx="46" cy="24" r="0.7" fill="white"/>
+            <path d="M35 31 Q40 35 45 31" stroke="#c0392b" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </svg>
+        <h2>Good day. How may I assist?</h2>
+        <p>Describe what you're cooking, planning, or need — I'll search your local Kroger-affiliated store and find the best options for you.</p>
+    </div>
+</div>
+
+<!-- ── INPUT BAR ── -->
+<div class="input-bar-wrap">
+    <div class="input-bar">
+        <input type="text" id="msg" placeholder="e.g. I want to make lasagna for 6 people…" onkeydown="if(event.key==='Enter') send()"/>
+        <button id="send-btn" onclick="send()">Ask Butler</button>
+    </div>
+</div>
+
+<script>
+// ── User identity + history ──
+function getOrCreateUserId() {
+    let id = document.cookie.split('; ')
+        .find(r => r.startsWith('butler_uid='))
+        ?.split('=')[1];
+    if (!id) {
+        id = 'user_' + Math.random().toString(36).substr(2, 8);
+        document.cookie = `butler_uid=${id};max-age=31536000;path=/`;
+    }
+    return id;
+}
+const USER_ID = getOrCreateUserId();
+// Pre-fill zip from profile if saved
+fetch('/get-profile?user_id=' + USER_ID).then(r=>r.json()).then(p=>{ if(p.zip_code) document.getElementById('zip').value = p.zip_code; });
+
+// Handle OAuth callback messages
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('cart_success')) {
+    const name = decodeURIComponent(urlParams.get('cart_success'));
+    showCartToast(`✅ "${name}" added to your cart!`, 'success');
+    window.history.replaceState({}, '', '/');
+}
+if (urlParams.get('cart_error')) {
+    showCartToast('❌ Could not add to cart. Please try again.', 'error');
+    window.history.replaceState({}, '', '/');
+}
+
+function showCartToast(message, type) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed; top: 84px; left: 50%; transform: translateX(-50%);
+        background: ${type === 'success' ? '#1a6e3e' : '#b83232'};
+        color: white; padding: 12px 24px; border-radius: 28px;
+        font-size: 0.88rem; font-family: 'DM Sans', sans-serif;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 999;
+        animation: fadeUp 0.3s ease both;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+const history = [];
+let pendingMessage = '';
+let pendingZip = '';
+
+// ── Store picker ──
+function renderStorePicker(data) {
+    const card = document.createElement('div');
+    card.className = 'store-picker';
+    card.innerHTML = `
+        <div class="store-picker-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9940a" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span>Which store do you shop at?</span>
+        </div>
+        <div class="store-picker-intro">I found ${data.stores.length} stores near you — pick yours and I'll remember it.</div>
+    `;
+    for (const store of data.stores) {
+        const opt = document.createElement('div');
+        opt.className = 'store-option';
+        opt.innerHTML = `
+            <div class="store-option-info">
+                <div class="store-option-name">${store.name}</div>
+                <div class="store-option-address">${store.address}, ${store.city}, ${store.state}</div>
+            </div>
+            <button class="shop-here-btn">Shop Here</button>
+        `;
+        opt.querySelector('button').addEventListener('click', () => selectStore(store, data.zip_code));
+        card.appendChild(opt);
+    }
+    return card;
+}
+
+async function selectStore(store, zip_code) {
+    const chat = document.getElementById('chat');
+    const typingRow = document.createElement('div');
+    typingRow.className = 'typing-row';
+    typingRow.innerHTML = `
+        <div class="typing-bubble">
+            <span class="typing-text">Butler is searching</span>
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>`;
+    chat.appendChild(typingRow);
+    chat.scrollTop = chat.scrollHeight;
+    try {
+        const res = await fetch('/select-store', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: USER_ID,
+                zip_code: zip_code,
+                message: pendingMessage,
+                history: history,
+                location_id: store.locationId,
+                store_name: store.name,
+                store_city: store.city,
+                store_state: store.state
+            })
+        });
+        const data = await res.json();
+        typingRow.remove();
+        history.push({role: 'user', content: pendingMessage});
+        history.push({role: 'assistant', content: data.greeting || ''});
+        const botRow = document.createElement('div');
+        botRow.className = 'bubble-row bot';
+        botRow.appendChild(renderResponse(data));
+        chat.appendChild(botRow);
+    } catch (e) {
+        typingRow.remove();
+        const errRow = document.createElement('div');
+        errRow.className = 'bubble-row bot';
+        errRow.innerHTML = `<div class="bubble" style="background:var(--card-bg);border:1px solid var(--border-light);color:var(--ink-light);">
+            My apologies — something went wrong. Please try again.</div>`;
+        chat.appendChild(errRow);
+    }
+    chat.scrollTop = chat.scrollHeight;
+}
+
+// ── Product recommendations ──
+function renderResponse(data) {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'result-card-header';
+    hdr.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9940a" stroke-width="2">
+            <path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/>
+            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+        </svg>
+        <span>${data.store ? '📍 ' + data.store.name + ' — ' + data.store.city + ', ' + data.store.state : 'ButlerClaw\'s Recommendations'}</span>`;
+    card.appendChild(hdr);
+
+    if (data.greeting) {
+        const intro = document.createElement('div');
+        intro.className = 'result-intro';
+        intro.textContent = data.greeting;
+        card.appendChild(intro);
+    }
+
+    for (const rec of data.recommendations || []) {
+        const p = rec.product;
+        const section = document.createElement('div');
+        section.className = 'product-section';
+
+        const label = document.createElement('div');
+        label.className = 'section-label';
+        label.textContent = rec.category;
+        section.appendChild(label);
+
+        const row = document.createElement('div');
+        row.className = 'product-row';
+        row.style.cssText = 'align-items:center;';
+
+        if (p.image) {
+            const img = document.createElement('img');
+            img.src = p.image;
+            img.alt = p.name;
+            img.style.cssText = 'width:52px;height:52px;object-fit:contain;border-radius:8px;flex-shrink:0;background:var(--cream);';
+            row.appendChild(img);
+        }
+
+        const info = document.createElement('div');
+        info.className = 'product-info';
+        info.innerHTML = `<div class="product-name">${p.name}</div>` +
+            (p.brand ? `<div class="product-brand">${p.brand}</div>` : '') +
+            (p.reason ? `<div style="font-size:0.73rem;color:var(--gold);margin-top:3px;">✦ ${p.reason}</div>` : '');
+        row.appendChild(info);
+
+        const right = document.createElement('div');
+        right.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;';
+
+        if (p.sale_price) {
+            right.innerHTML += `<div class="price-sale">$${p.sale_price}</div>
+                <span class="price-was">$${p.regular_price}</span>
+                <span class="sale-badge">On Sale</span>`;
+        } else if (p.regular_price) {
+            right.innerHTML += `<div class="price-regular">$${p.regular_price}</div>`;
+        }
+
+        if (p.url) {
+            const link = document.createElement('a');
+            link.href = p.url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.className = 'view-btn';
+            link.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+            </svg> View Product`;
+            right.appendChild(link);
+        }
+
+        if (p.url && rec.product.upc) {
+            const cartBtn = document.createElement('button');
+            cartBtn.className = 'cart-btn';
+            cartBtn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg> Add to Cart`;
+            cartBtn.addEventListener('click', () => addToCart(cartBtn, rec.product.upc, p.name));
+            right.appendChild(cartBtn);
+        }
+
+        row.appendChild(right);
+        section.appendChild(row);
+        card.appendChild(section);
+    }
+    return card;
+}
+
+async function addToCart(btn, upc, productName) {
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/add-to-cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: USER_ID, upc: upc, product_name: productName, quantity: 1 })
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+            btn.classList.remove('loading');
+            btn.classList.add('added');
+            btn.innerHTML = `✅ Added to Cart`;
+            btn.disabled = true;
+            showCartToast(`✅ "${productName}" added to your cart!`, 'success');
+        } else if (data.status === 'need_auth') {
+            // Redirect to Kroger OAuth
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            window.open(`/kroger-login?user_id=${USER_ID}&upc=${encodeURIComponent(upc)}&product_name=${encodeURIComponent(productName)}`, '_blank');
+        } else {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            showCartToast('❌ Could not add to cart. Please try again.', 'error');
+        }
+    } catch (e) {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        showCartToast('❌ Something went wrong. Please try again.', 'error');
+    }
+}
+
+// ── Main send ──
+async function send() {
+    const input = document.getElementById('msg');
+    const zip = document.getElementById('zip').value.trim() || '10001';
+    const message = input.value.trim();
+    if (!message) return;
+
+    const chat = document.getElementById('chat');
+    const welcome = chat.querySelector('.welcome');
+    if (welcome) welcome.remove();
+
+    const userRow = document.createElement('div');
+    userRow.className = 'bubble-row user';
+    userRow.innerHTML = `<div class="bubble user">${message}</div>`;
+    chat.appendChild(userRow);
+    input.value = '';
+    chat.scrollTop = chat.scrollHeight;
+
+    const typingRow = document.createElement('div');
+    typingRow.className = 'typing-row';
+    typingRow.innerHTML = `
+        <div class="typing-bubble">
+            <span class="typing-text">Butler is searching</span>
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>`;
+    chat.appendChild(typingRow);
+    chat.scrollTop = chat.scrollHeight;
+
+    try {
+        pendingMessage = message;
+        pendingZip = zip;
+        const res = await fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, zip_code: zip, user_id: USER_ID, history: history })
+        });
+        const data = await res.json();
+        typingRow.remove();
+
+        const botRow = document.createElement('div');
+        botRow.className = 'bubble-row bot';
+
+        if (data.stores) {
+            botRow.appendChild(renderStorePicker(data));
+        } else {
+            history.push({role: 'user', content: message});
+            history.push({role: 'assistant', content: data.greeting || ''});
+            botRow.appendChild(renderResponse(data));
+        }
+        chat.appendChild(botRow);
+    } catch (e) {
+        typingRow.remove();
+        const errRow = document.createElement('div');
+        errRow.className = 'bubble-row bot';
+        errRow.innerHTML = `<div class="bubble" style="background:var(--card-bg);border:1px solid var(--border-light);color:var(--ink-light);">
+            My apologies — something went wrong. Please try again.</div>`;
+        chat.appendChild(errRow);
+    }
+    chat.scrollTop = chat.scrollHeight;
+}
+</script>
+</body>
+</html>
