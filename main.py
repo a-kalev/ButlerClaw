@@ -121,6 +121,14 @@ async def get_profile(user_id: str = "anonymous"):
 async def root():
     return FileResponse("ui.html")
 
+@app.get("/manifest.json")
+async def manifest():
+    return FileResponse("/home/ubuntu/butlerclaw2/manifest.json")
+
+@app.get("/icon.png")
+async def icon():
+    return FileResponse("/home/ubuntu/butlerclaw2/icon.png")
+
 class AddToCartRequest(BaseModel):
     user_id: str
     upc: str
