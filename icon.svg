@@ -1,0 +1,44 @@
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <rect width="512" height="512" rx="100" fill="#18140f"/>
+  <!-- Gold shimmer line at top -->
+  <rect x="0" y="0" width="512" height="8" rx="4" fill="#c9940a" opacity="0.8"/>
+  <!-- CRAB BODY -->
+  <ellipse cx="256" cy="340" rx="130" ry="84" fill="#c0392b"/>
+  <ellipse cx="256" cy="314" rx="90" ry="45" fill="#e74c3c" opacity="0.6"/>
+  <path d="M166 340 Q256 300 346 340" stroke="#96281b" stroke-width="6" fill="none" opacity="0.5"/>
+  <path d="M176 374 Q256 340 336 374" stroke="#96281b" stroke-width="6" fill="none" opacity="0.5"/>
+  <!-- LEFT CLAW -->
+  <path d="M140 320 Q64 295 38 270" stroke="#c0392b" stroke-width="32" stroke-linecap="round" fill="none"/>
+  <path d="M38 270 Q12 235 20 208" stroke="#c0392b" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <path d="M38 270 Q4 268 2 244" stroke="#c0392b" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <circle cx="20" cy="208" r="16" fill="#96281b"/>
+  <circle cx="2" cy="244" r="16" fill="#96281b"/>
+  <!-- RIGHT CLAW -->
+  <path d="M372 320 Q448 295 474 270" stroke="#c0392b" stroke-width="32" stroke-linecap="round" fill="none"/>
+  <path d="M474 270 Q500 235 492 208" stroke="#c0392b" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <path d="M474 270 Q508 268 510 244" stroke="#c0392b" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <circle cx="492" cy="208" r="16" fill="#96281b"/>
+  <circle cx="510" cy="244" r="16" fill="#96281b"/>
+  <!-- Walking legs left -->
+  <path d="M178 408 Q140 448 128 488" stroke="#96281b" stroke-width="16" stroke-linecap="round" fill="none"/>
+  <path d="M206 428 Q180 472 172 500" stroke="#96281b" stroke-width="16" stroke-linecap="round" fill="none"/>
+  <!-- Walking legs right -->
+  <path d="M334 408 Q372 448 384 488" stroke="#96281b" stroke-width="16" stroke-linecap="round" fill="none"/>
+  <path d="M306 428 Q332 472 340 500" stroke="#96281b" stroke-width="16" stroke-linecap="round" fill="none"/>
+  <!-- Bow tie -->
+  <polygon points="230,252 256,270 230,288" fill="#c9940a"/>
+  <polygon points="282,252 256,270 282,288" fill="#c9940a"/>
+  <circle cx="256" cy="270" r="13" fill="#b8860b"/>
+  <!-- HEAD -->
+  <ellipse cx="256" cy="158" rx="84" ry="90" fill="#f5c9a0"/>
+  <!-- Hair -->
+  <ellipse cx="256" cy="82" rx="84" ry="38" fill="#2c2825"/>
+  <!-- Eyes -->
+  <ellipse cx="222" cy="152" rx="13" ry="14" fill="#2c2825"/>
+  <ellipse cx="290" cy="152" rx="13" ry="14" fill="#2c2825"/>
+  <circle cx="228" cy="146" r="5" fill="white"/>
+  <circle cx="296" cy="146" r="5" fill="white"/>
+  <!-- Smile -->
+  <path d="M222 192 Q256 218 290 192" stroke="#c0392b" stroke-width="8" stroke-linecap="round" fill="none"/>
+</svg>
