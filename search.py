@@ -109,3 +109,24 @@ def add_to_cart(upc, quantity=1, location_id=None, access_token=None):
         json=body
     )
     return response.status_code, response.text
+def refresh_kroger_token(refresh_token):
+    """Exchange refresh token for new access token. Returns new access_token or None."""
+    import base64
+    from dotenv import load_dotenv
+    load_dotenv()
+    client_id = os.getenv("KROGER_CLIENT_ID")
+    client_secret = os.getenv("KROGER_CLIENT_SECRET")
+    credentials = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
+    response = requests.post(
+        "https://api.kroger.com/v1/connect/oauth2/token",
+        headers={
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Authorization": f"Basic {credentials}"
+        },
+        data={
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token
+        }
+    )
+    data = response.json()
+    return data.get("access_token"), data.get("refresh_token")

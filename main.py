@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 from brain import understand_task, pick_best, build_greeting, extract_profile_updates, trim_history
-from search import search_kroger, get_nearby_stores
+from search import search_kroger, get_nearby_stores, refresh_kroger_token
 from memory import load_profile, save_profile
 import httpx
 from urllib.parse import urlencode
@@ -220,9 +220,20 @@ async def add_to_cart_endpoint(req: AddToCartRequest):
     from search import add_to_cart
     profile = load_profile(req.user_id)
     access_token = profile.get("kroger_access_token")
-
     if not access_token:
-        return {"status": "need_auth"}
+        refresh_token = profile.get("kroger_refresh_token")
+        if refresh_token:
+            new_access, new_refresh = refresh_kroger_token(refresh_token)
+            if new_access:
+                profile["kroger_access_token"] = new_access
+                if new_refresh:
+                    profile["kroger_refresh_token"] = new_refresh
+                save_profile(req.user_id, profile)
+                access_token = new_access
+            else:
+                return {"status": "need_auth"}
+        else:
+            return {"status": "need_auth"}
 
     status, response_text = add_to_cart(
         upc=req.upc,
@@ -234,7 +245,26 @@ async def add_to_cart_endpoint(req: AddToCartRequest):
     if status in (200, 201, 204):
         return {"status": "success"}
     elif status == 401:
-        # Token expired — clear it, tell UI to re-auth
+        # Token expired — try refresh before asking user to re-auth
+        refresh_token = profile.get("kroger_refresh_token")
+        if refresh_token:
+            new_access, new_refresh = refresh_kroger_token(refresh_token)
+            if new_access:
+                # Save new tokens and retry
+                profile["kroger_access_token"] = new_access
+                if new_refresh:
+                    profile["kroger_refresh_token"] = new_refresh
+                save_profile(req.user_id, profile)
+                # Retry the cart add with new token
+                status2, response_text2 = add_to_cart(
+                    upc=req.upc,
+                    quantity=req.quantity,
+                    location_id=profile.get("location_id"),
+                    access_token=new_access
+                )
+                if status2 in (200, 201, 204):
+                    return {"status": "success"}
+        # Refresh failed or no refresh token — ask user to re-auth
         profile.pop("kroger_access_token", None)
         save_profile(req.user_id, profile)
         return {"status": "need_auth"}
