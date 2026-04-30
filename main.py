@@ -28,6 +28,11 @@ class StoreSelectRequest(BaseModel):
     store_city: str
     store_state: str
 
+class ContactRequest(BaseModel):
+    user_id: str = "anonymous"
+    message: str
+    email: str = ""
+
 async def run_search(message, zip_code, user_id, history, location_id, store):
     """Core search logic — reused by both /chat and /select-store."""
     profile = load_profile(user_id)
@@ -270,6 +275,18 @@ async def add_to_cart_endpoint(req: AddToCartRequest):
         return {"status": "need_auth"}
     else:
         return {"status": "error", "detail": response_text}
+
+@app.post("/contact")
+async def contact(req: ContactRequest):
+    from memory import save_message
+    if not req.message.strip():
+        return {"status": "error", "detail": "Message cannot be empty"}
+    save_message(
+        user_id=req.user_id,
+        message=req.message.strip(),
+        email=req.email.strip() if req.email.strip() else None
+    )
+    return {"status": "success"}
 
 if __name__ == "__main__":
     import uvicorn

@@ -572,6 +572,143 @@
             box-shadow: 0 2px 8px rgba(26,110,62,0.25);
         }
         .cart-btn.loading { opacity: 0.7; cursor: wait; }
+
+        /* ── CART BAR ── */
+        .cart-bar {
+            display: none;
+            background: var(--sale-bg);
+            border-top: 1px solid rgba(26,110,62,0.2);
+            border-bottom: 1px solid rgba(26,110,62,0.2);
+            padding: 10px 28px;
+        }
+        .cart-bar.visible { display: block; }
+        .cart-bar a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--sale);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .cart-bar a:hover { opacity: 0.8; }
+        .cart-bar-count {
+            background: var(--sale);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        /* ── FOOTER ── */
+        .app-footer {
+            text-align: center;
+            padding: 12px;
+            font-size: 0.75rem;
+            color: var(--ink-light);
+            background: var(--warm-white);
+            border-top: 1px solid var(--border-light);
+        }
+        .app-footer a {
+            color: var(--gold);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .app-footer a:hover { text-decoration: underline; }
+
+        /* ── CONTACT MODAL ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.visible { display: flex; }
+        .modal {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 28px;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeUp 0.3s cubic-bezier(0.22,1,0.36,1) both;
+        }
+        .modal h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 6px;
+        }
+        .modal p {
+            font-size: 0.83rem;
+            color: var(--ink-light);
+            margin-bottom: 18px;
+            line-height: 1.6;
+        }
+        .modal textarea {
+            width: 100%;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 0.88rem;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            resize: none;
+            height: 110px;
+            outline: none;
+            transition: border-color 0.2s;
+            margin-bottom: 10px;
+        }
+        .modal textarea:focus { border-color: var(--gold); }
+        .modal input[type="email"] {
+            width: 100%;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 0.88rem;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            outline: none;
+            transition: border-color 0.2s;
+            margin-bottom: 16px;
+        }
+        .modal input[type="email"]:focus { border-color: var(--gold); }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .modal-cancel {
+            background: transparent;
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            padding: 9px 20px;
+            font-size: 0.85rem;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--ink-light);
+            cursor: pointer;
+        }
+        .modal-submit {
+            background: linear-gradient(135deg, var(--red), var(--red-dark));
+            border: none;
+            border-radius: 20px;
+            padding: 9px 24px;
+            font-size: 0.85rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 3px 12px rgba(184,50,50,0.25);
+        }
+        .modal-submit:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -690,6 +827,20 @@
     </div>
 </div>
 
+<div class="cart-bar" id="cart-bar">
+    <a href="#" id="cart-bar-link" target="_blank" rel="noopener noreferrer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        <span id="cart-bar-text">View your cart</span>
+        <span class="cart-bar-count" id="cart-bar-count">0</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:auto">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+    </a>
+</div>
+
 <!-- ── INPUT BAR ── -->
 <div class="input-bar-wrap">
     <div class="input-bar">
@@ -710,10 +861,49 @@ function getOrCreateUserId() {
     }
     return id;
 }
+
 const USER_ID = getOrCreateUserId();
+let cartCount = 0;
+
+const BANNER_URLS = {
+    'HARRIS TEETER': 'https://www.harristeeter.com/cart',
+    'RALPHS': 'https://www.ralphs.com/cart',
+    'FRED MEYER': 'https://www.fredmeyer.com/cart',
+    'KING SOOPERS': 'https://www.kingsoopers.com/cart',
+    'SMITHS': 'https://www.smithsfoodanddrug.com/cart',
+    'MARIANOS': 'https://www.marianos.com/cart',
+    'PICK N SAVE': 'https://www.picknsave.com/cart',
+    'QFC': 'https://www.qfc.com/cart',
+    'CITY MARKET': 'https://www.citymarket.com/cart',
+    'DILLONS': 'https://www.dillons.com/cart',
+    'KROGER': 'https://www.kroger.com/cart'
+};
+
+function getCartUrl(storeName) {
+    if (!storeName) return 'https://www.kroger.com/cart';
+    const upper = storeName.toUpperCase();
+    for (const [key, url] of Object.entries(BANNER_URLS)) {
+        if (upper.includes(key)) return url;
+    }
+    return 'https://www.kroger.com/cart';
+}
+
+function showCartBar(storeName) {
+    cartCount++;
+    const bar = document.getElementById('cart-bar');
+    const link = document.getElementById('cart-bar-link');
+    const text = document.getElementById('cart-bar-text');
+    const count = document.getElementById('cart-bar-count');
+    const url = getCartUrl(storeName);
+    link.href = url;
+    const displayName = storeName ? storeName.split(' - ')[0] : 'Kroger';
+    text.textContent = `View your ${displayName} cart`;
+    count.textContent = cartCount;
+    bar.classList.add('visible');
+}
+
 // Pre-fill zip from profile if saved
 fetch('/get-profile?user_id=' + USER_ID).then(r=>r.json()).then(p=>{ if(p.zip_code) document.getElementById('zip').value = p.zip_code; });
-
 // Handle OAuth callback messages
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('cart_success')) {
@@ -930,7 +1120,14 @@ async function addToCart(btn, upc, productName) {
             btn.classList.add('added');
             btn.innerHTML = `✅ Added to Cart`;
             btn.disabled = true;
+            const storeName = document.getElementById('cart-bar-link')?.dataset?.store || '';
             showCartToast(`✅ "${productName}" added to your cart!`, 'success');
+            // Get store name from the last recommendation card header
+            const headers = document.querySelectorAll('.result-card-header span');
+            const lastHeader = headers[headers.length - 1];
+            const headerText = lastHeader ? lastHeader.textContent : '';
+            const storeMatch = headerText.replace('📍 ', '').split(' — ')[0];
+            showCartBar(storeMatch);
         } else if (data.status === 'need_auth') {
             // Redirect to Kroger OAuth
             btn.classList.remove('loading');
@@ -948,6 +1145,40 @@ async function addToCart(btn, upc, productName) {
     }
 }
 
+
+function openContact() {
+    document.getElementById('contact-modal').classList.add('visible');
+    document.getElementById('contact-message').focus();
+}
+
+function closeContact() {
+    document.getElementById('contact-modal').classList.remove('visible');
+    document.getElementById('contact-message').value = '';
+    document.getElementById('contact-email').value = '';
+}
+
+async function submitContact() {
+    const message = document.getElementById('contact-message').value.trim();
+    const email = document.getElementById('contact-email').value.trim();
+    if (!message) {
+        document.getElementById('contact-message').style.borderColor = 'var(--red)';
+        return;
+    }
+    try {
+        const res = await fetch('/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: USER_ID, message, email })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            closeContact();
+            showCartToast('✅ Message sent — thank you!', 'success');
+        }
+    } catch (e) {
+        showCartToast('❌ Something went wrong. Please try again.', 'error');
+    }
+}
 // ── Main send ──
 async function send() {
     const input = document.getElementById('msg');
@@ -1009,5 +1240,24 @@ async function send() {
     chat.scrollTop = chat.scrollHeight;
 }
 </script>
+
+<!-- ── FOOTER ── -->
+<div class="app-footer">
+    <a href="#" onclick="openContact(); return false;">Contact us</a>
+</div>
+
+<!-- ── CONTACT MODAL ── -->
+<div class="modal-overlay" id="contact-modal">
+    <div class="modal">
+        <h3>Get in Touch 🦞</h3>
+        <p>Questions, feedback, bug reports — we read everything. Leave your email if you'd like a reply.</p>
+        <textarea id="contact-message" placeholder="Your message…"></textarea>
+        <input type="email" id="contact-email" placeholder="Your email (optional)"/>
+        <div class="modal-buttons">
+            <button class="modal-cancel" onclick="closeContact()">Cancel</button>
+            <button class="modal-submit" onclick="submitContact()">Send</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

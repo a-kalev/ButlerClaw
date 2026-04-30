@@ -48,3 +48,26 @@ def save_profile(user_id, profile):
     """, (user_id, json.dumps(profile)))
     conn.commit()
     conn.close()
+def init_messages():
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            message TEXT NOT NULL,
+            email TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+def save_message(user_id, message, email=None):
+    init_messages()
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute(
+        "INSERT INTO messages (user_id, message, email) VALUES (?, ?, ?)",
+        (user_id, message, email)
+    )
+    conn.commit()
+    conn.close()
