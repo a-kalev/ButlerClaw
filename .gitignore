@@ -2,3 +2,4 @@
 butler.db
 __pycache__/
 *.pyc
+vapid_private.pem
