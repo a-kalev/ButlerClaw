@@ -2,15 +2,42 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Dict, Optional
+from contextlib import asynccontextmanager
 from brain import understand_task, pick_best, build_greeting, extract_profile_updates, trim_history
 from search import search_kroger, get_nearby_stores, refresh_kroger_token
-from memory import load_profile, save_profile
+from memory import load_profile, save_profile, save_job, load_job, list_jobs
+from claw import run_job, TASK_REGISTRY
+from push import send_push, get_public_key
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 import httpx
 from urllib.parse import urlencode
 import requests
+import uuid as _uuid
 import os
 
-app = FastAPI()
+scheduler = BackgroundScheduler()
+
+def run_daily_digest():
+    """Runs at 18:00 UTC daily. Populated when sale_hunter and other
+    background tasks are built."""
+    print("[scheduler] Daily digest sweep running")
+
+@asynccontextmanager
+async def lifespan(app_instance):
+    scheduler.add_job(
+        run_daily_digest,
+        CronTrigger(hour=18, minute=0),
+        id="daily_digest",
+        replace_existing=True
+    )
+    scheduler.start()
+    print("[scheduler] APScheduler started")
+    yield
+    scheduler.shutdown()
+    print("[scheduler] APScheduler stopped")
+
+app = FastAPI(lifespan=lifespan)
 
 class ChatRequest(BaseModel):
     message: str
@@ -288,6 +315,59 @@ async def contact(req: ContactRequest):
     )
     return {"status": "success"}
 
+
+# ── Claw Engine Endpoints ──────────────────────────────────────
+
+class ClawRunRequest(BaseModel):
+    user_id: str
+    task_type: str
+    payload: dict = {}
+
+class PushSubscribeRequest(BaseModel):
+    user_id: str
+    subscription: dict
+    timezone: str = "UTC"
+
+@app.post("/claw/run")
+async def claw_run(req: ClawRunRequest):
+    if req.task_type not in TASK_REGISTRY:
+        return {"status": "error", "detail": f"Unknown task: {req.task_type}"}
+    job_id = str(_uuid.uuid4())[:8]
+    result = run_job(job_id, req.user_id, req.task_type, req.payload)
+    return {"job_id": job_id, "result": result.to_dict()}
+
+@app.get("/claw/jobs")
+async def claw_jobs(user_id: str):
+    jobs = list_jobs(user_id)
+    return {"jobs": jobs}
+
+@app.get("/claw/job/{job_id}")
+async def claw_job(job_id: str):
+    job = load_job(job_id)
+    if not job:
+        return {"status": "error", "detail": "Job not found"}
+    return job
+
+@app.post("/push/subscribe")
+async def push_subscribe(req: PushSubscribeRequest):
+    profile = load_profile(req.user_id)
+    profile["push_subscription"] = req.subscription
+    profile["timezone"] = req.timezone
+    save_profile(req.user_id, profile)
+    return {"status": "ok"}
+
+@app.get("/push/public-key")
+async def push_public_key():
+    return {"public_key": get_public_key()}
+
+@app.get("/sw.js")
+async def service_worker():
+    resp = FileResponse("/home/ubuntu/butlerclaw2/sw.js")
+    resp.headers["Service-Worker-Allowed"] = "/"
+    resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8767)
+
