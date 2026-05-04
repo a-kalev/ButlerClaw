@@ -78,12 +78,14 @@ class ClawTask:
 #   3. Add one line to TASK_REGISTRY
 #   Nothing else changes.
 
-TASK_REGISTRY: dict = {
-    # "auto_cart":        AutoCartTask,
-    # "meal_planner":     MealPlannerTask,
-    # "sale_hunter":      SaleHunterTask,
-    # "weekly_autopilot": AutopilotTask,
-}
+def _load_registry():
+    from tasks.auto_cart import AutoCartTask
+    return {
+        "auto_cart": AutoCartTask,
+    }
+
+TASK_REGISTRY: dict = _load_registry()
+
 
 def get_task(task_type: str) -> ClawTask:
     cls = TASK_REGISTRY.get(task_type)

@@ -7,7 +7,7 @@ load_dotenv()
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-def understand_task(user_message, history=None, profile=None):
+def understand_task(user_message, history=None, profile=None, strict=False):
     history = history or []
     profile = profile or {}
     profile_context = ""
@@ -37,6 +37,7 @@ Rules:
 - If user wants ready-made food: use bakery/deli terms ("bakery birthday cake", "rotisserie chicken", "fresh cupcakes")
 - If user wants ingredients or produce: use specific product names ("whole milk", "large eggs", "roma tomatoes", "chicken breast")
 - If request is vague (e.g. "groceries for the week"): return common weekly staples ["whole milk", "sourdough bread", "large eggs", "chicken breast", "bananas", "cheddar cheese"]
+- If strict mode is on: return ONLY the EXACT ITEMS mentioned, no additions, no expansions. Strict mode: {strict}
 - Scale quantity to request: single item = 1-2 terms, full meal = 3-5 terms, weekly shop = 6 terms max
 - Use conversation history for follow-up requests (e.g. "make it chocolate" refers to previous item)
 - Return ONLY valid JSON array, no explanation, no markdown fences"""
