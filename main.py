@@ -155,11 +155,11 @@ async def root():
 
 @app.get("/manifest.json")
 async def manifest():
-    return FileResponse("/home/ubuntu/butlerclaw2/manifest.json")
+    return FileResponse(os.path.join(os.path.dirname(__file__), "manifest.json"))
 
 @app.get("/icon.png")
 async def icon():
-    return FileResponse("/home/ubuntu/butlerclaw2/icon.png")
+    return FileResponse(os.path.join(os.path.dirname(__file__), "icon.png"))
 
 class AddToCartRequest(BaseModel):
     user_id: str
@@ -362,7 +362,7 @@ async def push_public_key():
 
 @app.get("/sw.js")
 async def service_worker():
-    resp = FileResponse("/home/ubuntu/butlerclaw2/sw.js")
+    resp = FileResponse(os.path.join(os.path.dirname(__file__), "sw.js"))
     resp.headers["Service-Worker-Allowed"] = "/"
     resp.headers["Cache-Control"] = "no-cache"
     return resp

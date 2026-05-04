@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 VAPID_PUBLIC_KEY  = os.getenv("VAPID_PUBLIC_KEY")
-VAPID_PRIVATE_KEY_PATH = os.path.expanduser("~/butlerclaw2/vapid_private.pem")
+VAPID_PRIVATE_KEY_PATH = os.path.join(os.path.dirname(__file__), "vapid_private.pem")
 VAPID_CLAIMS_EMAIL = os.getenv("VAPID_CLAIMS_EMAIL", "mailto:amirk@gmail.com")
 VAPID_CLAIMS = {"sub": VAPID_CLAIMS_EMAIL}
 
