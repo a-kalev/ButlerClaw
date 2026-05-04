@@ -709,6 +709,56 @@
             box-shadow: 0 3px 12px rgba(184,50,50,0.25);
         }
         .modal-submit:hover { opacity: 0.9; }
+
+       /* ── MODE TOGGLE ── */
+        .mode-toggle {
+            margin-left: auto;
+            display: flex;
+            gap: 4px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 4px;
+        }
+        .mode-btn {
+            background: transparent;
+            border: none;
+            border-radius: 16px;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            font-family: 'DM Sans', sans-serif;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            white-space: nowrap;
+        }
+        .mode-btn.active {
+            background: var(--gold);
+            color: var(--ink);
+            font-weight: 500;
+        }
+        /* ── CLAW PANEL ── */
+        .claw-zone {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 18px 22px;
+            box-shadow: 0 4px 20px rgba(28,23,18,0.06);
+        }
+        .claw-zone-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 14px;
+            letter-spacing: 0.02em;
+        }
+        .claw-empty {
+            font-size: 0.85rem;
+            color: var(--ink-light);
+            font-style: italic;
+            line-height: 1.7;
+        }
+
     </style>
 </head>
 <body>
@@ -769,6 +819,10 @@
             <p>Your Personal Shopping Butler</p>
         </div>
     </div>
+    <div class="mode-toggle">
+        <button class="mode-btn active" id="btn-chat" onclick="setMode('chat')">💬 Chat</button>
+        <button class="mode-btn" id="btn-claw" onclick="setMode('claw')">🦞 Claw</button>
+    </div>
 </header>
 
 <!-- ── ZIP BAR ── -->
@@ -779,6 +833,26 @@
     Your zip code:
     <input class="zip-input" type="text" id="zip" value="10001" maxlength="5" placeholder="10001"/>
     <span style="color:#b0a898; font-size:0.78rem;">Finds your nearest Kroger-affiliated store</span>
+</div>
+
+<!-- ── CLAW PANEL ── -->
+<div id="claw-panel" style="display:none; flex:1; overflow-y:auto; padding:24px 28px; max-width:780px; width:100%; margin:0 auto; flex-direction:column; gap:20px;">
+    <div class="claw-zone">
+        <div class="claw-zone-title">⚡ Active Claws</div>
+        <div id="active-claws-list">
+            <div class="claw-empty">No claws active yet. Coming soon: Weekly Autopilot, Meal Planner, Sale Hunter.</div>
+        </div>
+    </div>
+    <div class="claw-zone">
+        <div class="claw-zone-title">🕐 Last Run</div>
+        <div id="last-run-list">
+            <div class="claw-empty">No jobs run yet.</div>
+        </div>
+    </div>
+    <div class="claw-zone">
+        <div class="claw-zone-title">🦞 Tell the Butler</div>
+        <div class="claw-empty">Coming soon — type what you want the butler to do autonomously.</div>
+    </div>
 </div>
 
 <!-- ── CHAT ── -->
@@ -864,6 +938,97 @@ function getOrCreateUserId() {
 
 const USER_ID = getOrCreateUserId();
 let cartCount = 0;
+
+// ── Timezone ──
+const USER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+// ── Push Notifications ──
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = atob(base64);
+    return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function setupPush() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    try {
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        const existing = await reg.pushManager.getSubscription();
+        if (existing) return;
+        const keyRes = await fetch('/push/public-key');
+        const { public_key } = await keyRes.json();
+        if (!public_key) return;
+        const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(public_key)
+        });
+        await fetch('/push/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: USER_ID,
+                subscription: sub.toJSON(),
+                timezone: USER_TZ
+            })
+        });
+        console.log('[push] Subscribed successfully');
+    } catch(e) {
+        console.log('[push] Setup skipped:', e.message);
+    }
+}
+window.addEventListener('load', () => setupPush());
+
+// ── Mode toggle ──
+let currentMode = 'chat';
+
+function setMode(mode) {
+    currentMode = mode;
+    const chat = document.getElementById('chat');
+    const clawPanel = document.getElementById('claw-panel');
+    const btnChat = document.getElementById('btn-chat');
+    const btnClaw = document.getElementById('btn-claw');
+    if (mode === 'chat') {
+        chat.style.display = 'flex';
+        clawPanel.style.display = 'none';
+        btnChat.classList.add('active');
+        btnClaw.classList.remove('active');
+    } else {
+        chat.style.display = 'none';
+        clawPanel.style.display = 'flex';
+        clawPanel.style.flexDirection = 'column';
+        btnChat.classList.remove('active');
+        btnClaw.classList.add('active');
+        loadClawJobs();
+    }
+}
+
+async function loadClawJobs() {
+    try {
+        const res = await fetch('/claw/jobs?user_id=' + USER_ID);
+        const data = await res.json();
+        const list = document.getElementById('last-run-list');
+        if (!data.jobs || data.jobs.length === 0) {
+            list.innerHTML = '<div class="claw-empty">No jobs run yet.</div>';
+            return;
+        }
+        list.innerHTML = data.jobs.slice(0, 5).map(job => `
+            <div style="padding:10px 0; border-bottom:1px solid var(--border-light);">
+                <div style="font-size:0.88rem; font-weight:500; color:var(--ink);">
+                    ${job.task_type} — ${job.status}
+                </div>
+                <div style="font-size:0.78rem; color:var(--ink-light); margin-top:3px;">
+                    ${job.result?.summary || ''}
+                </div>
+                <div style="font-size:0.72rem; color:var(--ink-light); opacity:0.7; margin-top:2px;">
+                    ${job.last_run_at || job.created_at || ''}
+                </div>
+            </div>
+        `).join('');
+    } catch(e) {
+        console.log('[claw] Could not load jobs:', e);
+    }
+}
 
 const BANNER_URLS = {
     'HARRIS TEETER': 'https://www.harristeeter.com/cart',
