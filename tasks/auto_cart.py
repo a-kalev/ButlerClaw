@@ -44,12 +44,20 @@ class AutoCartTask(ClawTask):
         store_name = profile.get("store_name", "Kroger")
 
         # ── Understand what to buy ────────────────────────────────────────────
-        terms = understand_task(
-    message,
-    history=[],
-    profile=profile,
-    strict=True
-)
+        raw_terms = understand_task(
+            message,
+            history=[],
+            profile=profile,
+            strict=True
+        )
+
+        # Normalize — strict mode returns list of dicts, chat mode returns list of strings
+        terms = []
+        for t in raw_terms:
+            if isinstance(t, dict):
+                terms.append({"term": t.get("term", ""), "quantity": t.get("quantity", 1)})
+            else:
+                terms.append({"term": t, "quantity": 1})
 
         # ── Search + pick best + add to cart ─────────────────────────────────
         from search import add_to_cart
@@ -58,7 +66,9 @@ class AutoCartTask(ClawTask):
         added_count = 0
         failed_count = 0
 
-        for term in terms:
+        for item in terms:
+            term = item["term"]
+            quantity = item["quantity"]
             data = search_kroger(term, zip_code=zip_code, location_id=location_id)
             best = pick_best(message, term, data["results"], profile)
             if not best:
@@ -70,7 +80,7 @@ class AutoCartTask(ClawTask):
 
             status_code, _ = add_to_cart(
                 upc=upc,
-                quantity=1,
+                quantity=quantity,
                 location_id=location_id,
                 access_token=access_token
             )
@@ -88,7 +98,7 @@ class AutoCartTask(ClawTask):
                         access_token = new_access
                         status_code, _ = add_to_cart(
                             upc=upc,
-                            quantity=1,
+                            quantity=quantity,
                             location_id=location_id,
                             access_token=access_token
                         )

@@ -918,8 +918,9 @@
 <!-- ── INPUT BAR ── -->
 <div class="input-bar-wrap">
     <div class="input-bar">
-        <input type="text" id="msg" placeholder="e.g. I want to make lasagna for 6 people…" onkeydown="if(event.key==='Enter') send()"/>
+        <input type="text" id="msg" placeholder="e.g. I want to make lasagna for 6 people…" onkeydown="if(event.key==='Enter') currentMode === 'claw' ? sendClaw() : send()"/>
         <button id="send-btn" onclick="send()">Ask Butler</button>
+        <button id="claw-btn" onclick="sendClaw()" style="display:none; background:linear-gradient(135deg,#c9940a,#a07608); color:var(--ink); border:none; border-radius:28px; padding:12px 26px; font-size:0.9rem; font-family:'DM Sans',sans-serif; font-weight:600; cursor:pointer; white-space:nowrap; box-shadow:0 4px 16px rgba(201,148,10,0.3); letter-spacing:0.02em;">🦞 Add to Cart</button>
     </div>
 </div>
 
@@ -988,17 +989,27 @@ function setMode(mode) {
     const clawPanel = document.getElementById('claw-panel');
     const btnChat = document.getElementById('btn-chat');
     const btnClaw = document.getElementById('btn-claw');
+    const sendBtn = document.getElementById('send-btn');
+    const clawBtn = document.getElementById('claw-btn');
+    const msgInput = document.getElementById('msg');
+
     if (mode === 'chat') {
         chat.style.display = 'flex';
         clawPanel.style.display = 'none';
         btnChat.classList.add('active');
         btnClaw.classList.remove('active');
+        sendBtn.style.display = '';
+        clawBtn.style.display = 'none';
+        msgInput.placeholder = 'e.g. I want to make lasagna for 6 people…';
     } else {
         chat.style.display = 'none';
         clawPanel.style.display = 'flex';
         clawPanel.style.flexDirection = 'column';
         btnChat.classList.remove('active');
         btnClaw.classList.add('active');
+        sendBtn.style.display = 'none';
+        clawBtn.style.display = '';
+        msgInput.placeholder = 'e.g. Add whole milk, eggs and sourdough…';
         loadClawJobs();
     }
 }
@@ -1028,6 +1039,128 @@ async function loadClawJobs() {
     } catch(e) {
         console.log('[claw] Could not load jobs:', e);
     }
+}
+
+// ── Claw send ──
+async function sendClaw() {
+    const input = document.getElementById('msg');
+    const message = input.value.trim();
+    if (!message) return;
+
+    const clawBtn = document.getElementById('claw-btn');
+    clawBtn.disabled = true;
+    clawBtn.textContent = '🦞 Working…';
+    input.value = '';
+
+    // Show confirmation toast
+    showCartToast('🦞 Butler is adding items to your cart…', 'success');
+
+    try {
+        const res = await fetch('/claw/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: USER_ID,
+                task_type: 'auto_cart',
+                payload: { message }
+            })
+        });
+        const data = await res.json();
+        const result = data.result;
+
+        clawBtn.disabled = false;
+        clawBtn.textContent = '🦞 Add to Cart';
+
+        if (result.status === 'needs_auth') {
+            showCartToast('🔐 Please sign in to Kroger first.', 'error');
+            window.open(`/kroger-login?user_id=${USER_ID}&upc=pending&product_name=cart`, '_blank');
+            return;
+        }
+
+        // Render result in claw panel
+        renderClawResult(result);
+
+        // Refresh job list
+        loadClawJobs();
+
+        // Show cart bar
+        const profile_res = await fetch('/get-profile?user_id=' + USER_ID);
+        const profile = await profile_res.json();
+        if (result.sections?.[0]?.items?.some(i => i.added)) {
+            showCartBar(profile.store_name || 'Kroger');
+        }
+
+    } catch(e) {
+        clawBtn.disabled = false;
+        clawBtn.textContent = '🦞 Add to Cart';
+        showCartToast('❌ Something went wrong. Please try again.', 'error');
+    }
+}
+
+function renderClawResult(result) {
+    const panel = document.getElementById('claw-panel');
+
+    // Remove previous result card if any
+    const prev = document.getElementById('claw-result-card');
+    if (prev) prev.remove();
+
+    const card = document.createElement('div');
+    card.id = 'claw-result-card';
+    card.className = 'result-card';
+    card.style.animation = 'fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both';
+
+    // Header
+    card.innerHTML = `
+        <div class="result-card-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9940a" stroke-width="2">
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+            <span>🦞 ${result.summary}</span>
+        </div>
+    `;
+
+    // Items
+    for (const section of result.sections || []) {
+        for (const item of section.items || []) {
+            const row = document.createElement('div');
+            row.className = 'product-section';
+            row.style.padding = '12px 22px';
+            row.style.display = 'flex';
+            row.style.alignItems = 'center';
+            row.style.gap = '14px';
+
+            if (item.image) {
+                row.innerHTML += `<img src="${item.image}" alt="${item.name}"
+                    style="width:48px;height:48px;object-fit:contain;border-radius:8px;flex-shrink:0;background:var(--cream);">`;
+            }
+
+            const status = item.added
+                ? `<span style="color:var(--sale);font-size:0.75rem;font-weight:600;">✅ Added</span>`
+                : `<span style="color:var(--red);font-size:0.75rem;">❌ Failed</span>`;
+
+            const price = item.sale
+                ? `<span style="color:var(--sale);font-weight:600;">$${item.price}</span> <span class="sale-badge">Sale</span>`
+                : item.price ? `<span>$${item.price}</span>` : '';
+
+            row.innerHTML += `
+                <div style="flex:1;">
+                    <div class="product-name">${item.name}</div>
+                    <div style="font-size:0.75rem;color:var(--ink-light);margin-top:2px;">${item.reason || ''}</div>
+                </div>
+                <div style="text-align:right;flex-shrink:0;">
+                    <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;">${price}</div>
+                    ${status}
+                </div>
+            `;
+            card.appendChild(row);
+        }
+    }
+
+    // Insert at top of claw panel, after first zone
+    const firstZone = panel.querySelector('.claw-zone');
+    panel.insertBefore(card, firstZone);
+    panel.scrollTop = 0;
 }
 
 const BANNER_URLS = {
