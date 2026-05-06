@@ -22,6 +22,7 @@ class ClawSection:
     title: str
     type: str          # "meal" | "cart_summary" | "sale_alert" | "restock"
     items: List[ClawItem] = field(default_factory=list)
+    recipe: List[str] = field(default_factory=list)
 
 @dataclass
 class ClawAction:
@@ -80,8 +81,10 @@ class ClawTask:
 
 def _load_registry():
     from tasks.auto_cart import AutoCartTask
+    from tasks.meal_planner import MealPlannerTask
     return {
         "auto_cart": AutoCartTask,
+        "meal_planner": MealPlannerTask,
     }
 
 TASK_REGISTRY: dict = _load_registry()

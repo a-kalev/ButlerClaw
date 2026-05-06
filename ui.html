@@ -758,7 +758,77 @@
             font-style: italic;
             line-height: 1.7;
         }
-
+        .claw-tab {
+            background: transparent;
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            padding: 7px 18px;
+            font-size: 0.82rem;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--ink-light);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .claw-tab.active {
+            background: var(--ink);
+            border-color: var(--ink);
+            color: var(--warm-white);
+            font-weight: 500;
+        }
+        /* ── MEAL PLAN ── */
+        .meal-section {
+            border-bottom: 1px solid var(--border-light);
+            padding: 16px 22px;
+        }
+        .meal-section:last-child { border-bottom: none; }
+        .meal-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 10px;
+        }
+        .meal-recipe {
+            font-size: 0.78rem;
+            color: var(--ink-light);
+            line-height: 1.7;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        .meal-ingredients {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .meal-ingredient-tag {
+            background: var(--gold-light);
+            border: 1px solid var(--gold-muted);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 0.72rem;
+            color: #7a5800;
+            font-weight: 500;
+        }
+        .add-all-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--sale), #155a33);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 0.95rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 16px 22px;
+            width: calc(100% - 44px);
+            box-shadow: 0 4px 16px rgba(26,110,62,0.25);
+            transition: opacity 0.2s;
+            letter-spacing: 0.02em;
+        }
+        .add-all-btn:hover { opacity: 0.9; }
+        .add-all-btn:disabled { opacity: 0.6; cursor: wait;}
     </style>
 </head>
 <body>
@@ -837,8 +907,17 @@
 
 <!-- ── CLAW PANEL ── -->
 <div id="claw-panel" style="display:none; flex:1; overflow-y:auto; padding:24px 28px; max-width:780px; width:100%; margin:0 auto; flex-direction:column; gap:20px;">
-    <div class="claw-zone">
-        <div class="claw-zone-title">⚡ Active Claws</div>
+
+    <!-- Claw sub-tabs -->
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="claw-tab active" id="tab-autocart" onclick="setClawTab('autocart')">🦞 Auto Cart</button>
+        <button class="claw-tab" id="tab-mealplan" onclick="setClawTab('mealplan')">🍽️ Meal Planner</button>
+    </div>
+
+    <!-- Auto Cart zone -->
+    <div id="zone-autocart">
+        <div class="claw-zone">
+            <div class="claw-zone-title">⚡ Active Claws</div>
         <div id="active-claws-list">
             <div class="claw-empty">No claws active yet. Coming soon: Weekly Autopilot, Meal Planner, Sale Hunter.</div>
         </div>
@@ -851,8 +930,24 @@
     </div>
     <div class="claw-zone">
         <div class="claw-zone-title">🦞 Tell the Butler</div>
-        <div class="claw-empty">Coming soon — type what you want the butler to do autonomously.</div>
+        <div class="claw-empty">Type what you want added to cart in the input below.</div>
     </div>
+    </div><!-- end zone-autocart -->
+
+    <!-- Meal Planner zone -->
+    <div id="zone-mealplan" style="display:none;">
+        <div class="claw-zone" style="margin-bottom:16px;">
+            <div class="claw-zone-title">🍽️ Meal Planner</div>
+            <div style="font-size:0.85rem; color:var(--ink-light); line-height:1.7; margin-bottom:14px;">
+                Plan 5 dinners for your family. The butler picks meals, finds ingredients at your store, and adds everything to cart in one tap.
+            </div>
+            <button onclick="runMealPlanner()" id="plan-btn" style="background:linear-gradient(135deg,var(--red),var(--red-dark)); color:white; border:none; border-radius:20px; padding:10px 24px; font-size:0.88rem; font-family:'DM Sans',sans-serif; font-weight:500; cursor:pointer; box-shadow:0 3px 12px rgba(184,50,50,0.25);">
+                🍽️ Plan My Week
+            </button>
+        </div>
+        <div id="meal-plan-result"></div>
+    </div>
+
 </div>
 
 <!-- ── CHAT ── -->
@@ -994,6 +1089,7 @@ function setMode(mode) {
     const msgInput = document.getElementById('msg');
 
     if (mode === 'chat') {
+        document.querySelector('.input-bar-wrap').style.display = '';
         chat.style.display = 'flex';
         clawPanel.style.display = 'none';
         btnChat.classList.add('active');
@@ -1041,6 +1137,163 @@ async function loadClawJobs() {
     }
 }
 
+// ── Claw sub-tabs ──
+let currentClawTab = 'autocart';
+
+function setClawTab(tab) {
+    currentClawTab = tab;
+    document.getElementById('zone-autocart').style.display = tab === 'autocart' ? 'block' : 'none';
+    document.getElementById('zone-mealplan').style.display = tab === 'mealplan' ? 'block' : 'none';
+    document.getElementById('tab-autocart').classList.toggle('active', tab === 'autocart');
+    document.getElementById('tab-mealplan').classList.toggle('active', tab === 'mealplan');
+
+    const clawBtn = document.getElementById('claw-btn');
+    const msgInput = document.getElementById('msg');
+    const inputBarWrap = document.querySelector('.input-bar-wrap');
+    if (tab === 'autocart') {
+        clawBtn.style.display = '';
+        msgInput.placeholder = 'e.g. Add whole milk, eggs and sourdough…';
+        inputBarWrap.style.display = '';
+    } else {
+        inputBarWrap.style.display = 'none';
+    }
+}
+
+async function runMealPlanner() {
+    const btn = document.getElementById('plan-btn');
+    const resultDiv = document.getElementById('meal-plan-result');
+    btn.disabled = true;
+    btn.textContent = '🍽️ Planning your week…';
+    resultDiv.innerHTML = `
+        <div style="text-align:center; padding:32px; color:var(--ink-light); font-style:italic; font-size:0.88rem;">
+            Your butler is planning 5 dinners and finding ingredients…
+        </div>`;
+
+    try {
+        const res = await fetch('/claw/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: USER_ID,
+                task_type: 'meal_planner',
+                payload: {}
+            })
+        });
+        const data = await res.json();
+        btn.disabled = false;
+        btn.textContent = '🍽️ Plan My Week';
+
+        if (data.result.status === 'failed') {
+            resultDiv.innerHTML = `<div class="claw-empty">Sorry, something went wrong. Please try again.</div>`;
+            return;
+        }
+
+        renderMealPlan(data.result, data.job_id);
+        loadClawJobs();
+
+    } catch(e) {
+        btn.disabled = false;
+        btn.textContent = '🍽️ Plan My Week';
+        resultDiv.innerHTML = `<div class="claw-empty">Something went wrong. Please try again.</div>`;
+    }
+}
+
+function renderMealPlan(result, jobId) {
+    const resultDiv = document.getElementById('meal-plan-result');
+    resultDiv.innerHTML = '';
+
+    const card = document.createElement('div');
+    card.className = 'result-card';
+
+    // Header
+    card.innerHTML = `
+        <div class="result-card-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9940a" stroke-width="2">
+                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2"/>
+                <path d="M18 2h3v13"/><path d="M15 9h6"/>
+            </svg>
+            <span>🍽️ ${result.summary}</span>
+        </div>
+    `;
+
+    // Add All to Cart button
+    const addAllBtn = document.createElement('button');
+    addAllBtn.className = 'add-all-btn';
+    addAllBtn.id = 'add-all-btn';
+    addAllBtn.textContent = '🛒 Add All Ingredients to Cart';
+    addAllBtn.onclick = () => addMealPlanToCart(jobId, addAllBtn, result);
+    card.appendChild(addAllBtn);
+
+    // Meals
+    for (const section of result.sections || []) {
+        const mealDiv = document.createElement('div');
+        mealDiv.className = 'meal-section';
+
+        // Title
+        const title = document.createElement('div');
+        title.className = 'meal-title';
+        title.textContent = section.title;
+        mealDiv.appendChild(title);
+
+        // Recipe steps
+        if (section.recipe && section.recipe.length > 0) {
+            const recipe = document.createElement('div');
+            recipe.className = 'meal-recipe';
+            recipe.innerHTML = section.recipe.map((step, i) =>
+                `<div style="margin-bottom:4px;"><span style="color:var(--gold);font-weight:600;">${i+1}.</span> ${step}</div>`
+            ).join('');
+            mealDiv.appendChild(recipe);
+        }
+
+        // Ingredient tags
+        if (section.items && section.items.length > 0) {
+            const tags = document.createElement('div');
+            tags.className = 'meal-ingredients';
+            for (const item of section.items) {
+                const tag = document.createElement('div');
+                tag.className = 'meal-ingredient-tag';
+                tag.textContent = item.reason || item.name;
+                tags.appendChild(tag);
+            }
+            mealDiv.appendChild(tags);
+        }
+
+        card.appendChild(mealDiv);
+    }
+
+    resultDiv.appendChild(card);
+}
+
+async function addMealPlanToCart(jobId, btn, result) {
+    btn.disabled = true;
+    btn.textContent = '🛒 Adding to cart…';
+
+    try {
+        const res = await fetch('/claw/add-meal-plan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: USER_ID, job_id: jobId })
+        });
+        const data = await res.json();
+
+        if (data.status === 'need_auth') {
+            btn.disabled = false;
+            btn.textContent = '🛒 Add All Ingredients to Cart';
+            showCartToast('🔐 Please sign in to Kroger first.', 'error');
+            window.open(`/kroger-login?user_id=${USER_ID}&upc=pending&product_name=cart`, '_blank');
+            return;
+        }
+
+        btn.textContent = `✅ ${data.added} ingredients added!`;
+        showCartToast(`✅ ${data.added} ingredients added to your cart!`, 'success');
+        showCartBar(data.store_name || 'Kroger');
+
+    } catch(e) {
+        btn.disabled = false;
+        btn.textContent = '🛒 Add All Ingredients to Cart';
+        showCartToast('❌ Something went wrong. Please try again.', 'error');
+    }
+}
 // ── Claw send ──
 async function sendClaw() {
     const input = document.getElementById('msg');
@@ -1093,6 +1346,7 @@ async function sendClaw() {
     } catch(e) {
         clawBtn.disabled = false;
         clawBtn.textContent = '🦞 Add to Cart';
+        console.error('[sendClaw error]', e);
         showCartToast('❌ Something went wrong. Please try again.', 'error');
     }
 }
@@ -1157,10 +1411,11 @@ function renderClawResult(result) {
         }
     }
 
-    // Insert at top of claw panel, after first zone
-    const firstZone = panel.querySelector('.claw-zone');
-    panel.insertBefore(card, firstZone);
-    panel.scrollTop = 0;
+    // Insert at top of autocart zone
+    const autoCartZone = document.getElementById('zone-autocart');
+    const firstZone = autoCartZone.querySelector('.claw-zone');
+    autoCartZone.insertBefore(card, firstZone);
+    autoCartZone.scrollTop = 0;
 }
 
 const BANNER_URLS = {

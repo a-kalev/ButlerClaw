@@ -367,6 +367,68 @@ async def service_worker():
     resp.headers["Cache-Control"] = "no-cache"
     return resp
 
+class AddMealPlanRequest(BaseModel):
+    user_id: str
+    job_id: str
+
+@app.post("/claw/add-meal-plan")
+async def add_meal_plan(req: AddMealPlanRequest):
+    """Adds all items from a meal plan job to cart."""
+    from search import add_to_cart
+    profile = load_profile(req.user_id)
+    access_token = profile.get("kroger_access_token")
+
+    if not access_token:
+        from search import refresh_kroger_token
+        refresh_token = profile.get("kroger_refresh_token")
+        if refresh_token:
+            new_access, new_refresh = refresh_kroger_token(refresh_token)
+            if new_access:
+                profile["kroger_access_token"] = new_access
+                if new_refresh:
+                    profile["kroger_refresh_token"] = new_refresh
+                save_profile(req.user_id, profile)
+                access_token = new_access
+        if not access_token:
+            return {"status": "need_auth"}
+
+    job = load_job(req.job_id)
+    if not job:
+        return {"status": "error", "detail": "Job not found"}
+
+    result = job.get("result", {})
+    sections = result.get("sections", [])
+    location_id = profile.get("location_id")
+
+    added = 0
+    failed = 0
+    seen_upcs = set()
+
+    for section in sections:
+        for item in section.get("items", []):
+            upc = item.get("upc")
+            if not upc or upc in seen_upcs:
+                continue
+            seen_upcs.add(upc)
+            status_code, _ = add_to_cart(
+                upc=upc,
+                quantity=1,
+                location_id=location_id,
+                access_token=access_token
+            )
+            if status_code in (200, 201, 204):
+                added += 1
+            else:
+                failed += 1
+
+    store_name = profile.get("store_name", "Kroger")
+    return {
+        "status": "success",
+        "added": added,
+        "failed": failed,
+        "store_name": store_name
+    }
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("APP_PORT", "8767"))

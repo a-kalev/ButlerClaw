@@ -37,7 +37,9 @@ Rules:
 - If user wants ready-made food: use bakery/deli terms ("bakery birthday cake", "rotisserie chicken", "fresh cupcakes")
 - If user wants ingredients or produce: use specific product names ("whole milk", "large eggs", "roma tomatoes", "chicken breast")
 - If request is vague (e.g. "groceries for the week"): return common weekly staples ["whole milk", "sourdough bread", "large eggs", "chicken breast", "bananas", "cheddar cheese"]
-- If strict mode is on: return ONLY exact items mentioned as a JSON array of objects like [{{"term": "skim milk", "quantity": 1}}, {{"term": "honey", "quantity": 1}}]. Respect quantities if mentioned (e.g. "2 milks" → quantity 2). No additions, no duplicates. Strict mode: {strict}
+- If item was not found suggest other items from the SAME category (e.g., "white bread" if "italian bread" is not found). NEVER suggest items from different category as replacement 
+- ALWAYS return a JSON array of strings like ["whole milk", "eggs"] UNLESS strict mode is active.
+- If strict mode is active (current value: {strict}): you MUST return a JSON array of objects, NOT strings. Format: [{{"term": "skim milk", "quantity": 1}}, {{"term": "honey", "quantity": 1}}]. Respect quantities (e.g. "2 milks" → quantity 2). No additions, no duplicates.
 - Scale quantity to request: single item = 1-2 terms, full meal = 3-5 terms, weekly shop = 6 terms max
 - Use conversation history for follow-up requests (e.g. "make it chocolate" refers to previous item)
 - Return ONLY valid JSON array, no explanation, no markdown fences"""
@@ -175,3 +177,61 @@ Rules:
     # Always preserve user_id
     updated["user_id"] = current_profile["user_id"]
     return updated
+def plan_meals(profile: dict) -> list:
+    """One Groq call — returns list of 5 meal dicts with day, meal, ingredients, recipe."""
+    profile_context = ""
+    if profile.get("dietary"):
+        profile_context += f"Dietary restrictions: {', '.join(profile['dietary'])}. STRICT — exclude these ingredients entirely."
+    if profile.get("preferences"):
+        profile_context += f" Preferences: {', '.join(profile['preferences'])}."
+    if profile.get("family"):
+        profile_context += f" Family: {profile['family']}."
+
+    response = requests.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        headers={"Authorization": f"Bearer {GROQ_API_KEY}"},
+        json={
+            "model": "llama-3.1-8b-instant",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": f"""You are a meal planning expert. Plan 5 dinners.
+{profile_context}
+Return ONLY a JSON array of exactly 5 objects. No explanation, no markdown fences.
+Each object must follow this exact shape:
+{{
+  "day": "Monday",
+  "meal": "Lemon Herb Chicken",
+  "ingredients": ["chicken breast", "lemon", "olive oil", "garlic", "fresh parsley"],
+  "recipe": [
+    "Juice lemon and mix with olive oil and minced garlic.",
+    "Season chicken and coat with marinade, rest 10 minutes.",
+    "Cook in skillet over medium-high heat 6 minutes per side.",
+    "Garnish with fresh parsley and serve immediately."
+  ]
+}}
+Rules:
+- ingredients must be real Kroger-searchable product names (e.g. "chicken breast" not "protein")
+- recipe must be exactly AT MOST 5 steps, plain English, no sub-bullets
+- vary cuisines across the 5 meals — no two meals from the same cuisine
+- no repeated main protein across meals
+- days must be: Monday, Tuesday, Wednesday, Thursday, Friday
+- Return ONLY valid JSON array, nothing else"""
+                },
+                {
+                    "role": "user",
+                    "content": "Plan 5 dinners for this family."
+                }
+            ],
+            "temperature": 0.7
+        }
+    )
+    content = response.json()["choices"][0]["message"]["content"].strip()
+    content = content.replace("```json", "").replace("```", "").strip()
+    try:
+        meals = json.loads(content)
+        if isinstance(meals, list) and len(meals) == 5:
+            return meals
+        return []
+    except json.JSONDecodeError:
+        return []
