@@ -161,6 +161,10 @@ async def manifest():
 async def icon():
     return FileResponse(os.path.join(os.path.dirname(__file__), "icon.png"))
 
+@app.get("/icon2.png")
+async def icon2():
+    return FileResponse(os.path.join(os.path.dirname(__file__), "icon2.png"))
+
 class AddToCartRequest(BaseModel):
     user_id: str
     upc: str
