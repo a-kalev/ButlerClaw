@@ -5,7 +5,9 @@ from typing import List, Dict, Optional
 from contextlib import asynccontextmanager
 from brain import understand_task, pick_best, build_greeting, extract_profile_updates, trim_history
 from search import search_kroger, get_nearby_stores, refresh_kroger_token
-from memory import load_profile, save_profile, save_job, load_job, list_jobs
+from memory import (load_profile, save_profile, save_job, load_job, list_jobs,
+                    get_usuals_products, add_usual_product, remove_usual_product,
+                    get_unusuals, add_unusual, remove_unusual, clear_unusuals)
 from claw import run_job, TASK_REGISTRY
 from push import send_push, get_public_key
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -433,6 +435,172 @@ async def add_meal_plan(req: AddMealPlanRequest):
         "store_name": store_name
     }
 
+# ── Usuals & Unusuals Endpoints ───────────────────────────────────────────────
+
+class UsualProductRequest(BaseModel):
+    user_id: str
+    product: dict  # full product object — upc, name, brand, image, regular_price, sale_price, term
+
+class RemoveUsualRequest(BaseModel):
+    user_id: str
+    upc: str
+
+@app.get("/usuals")
+async def get_usuals(user_id: str):
+    products = get_usuals_products(user_id)
+    unusuals = get_unusuals(user_id)
+    profile = load_profile(user_id)
+    autopilot = profile.get("claws", {}).get("weekly_autopilot", {})
+    return {
+        "usuals": products,
+        "unusuals": unusuals,
+        "autopilot": autopilot
+    }
+
+@app.post("/usuals/add")
+async def add_usual(req: UsualProductRequest):
+    updated = add_usual_product(req.user_id, req.product)
+    return {"status": "ok", "usuals": updated}
+
+@app.post("/usuals/remove")
+async def remove_usual(req: RemoveUsualRequest):
+    updated = remove_usual_product(req.user_id, req.upc)
+    return {"status": "ok", "usuals": updated}
+
+@app.post("/unusuals/add")
+async def add_unusual_item(req: UsualProductRequest):
+    updated = add_unusual(req.user_id, req.product)
+    return {"status": "ok", "unusuals": updated}
+
+@app.post("/unusuals/remove")
+async def remove_unusual_item(req: RemoveUsualRequest):
+    updated = remove_unusual(req.user_id, req.upc)
+    return {"status": "ok", "unusuals": updated}
+
+class AutopilotSettingsRequest(BaseModel):
+    user_id: str
+    enabled: bool
+    mode: str = "remind"   # "auto" | "remind"
+    day: str = "sunday"
+    time: str = "18:00"
+
+@app.post("/usuals/autopilot")
+async def set_autopilot(req: AutopilotSettingsRequest):
+    profile = load_profile(req.user_id)
+    if "claws" not in profile:
+        profile["claws"] = {}
+    profile["claws"]["weekly_autopilot"] = {
+        "enabled": req.enabled,
+        "mode": req.mode,
+        "day": req.day,
+        "time": req.time
+    }
+    save_profile(req.user_id, profile)
+    return {"status": "ok"}
+
+@app.post("/usuals/run")
+async def run_usuals_now(user_id: str):
+    """Immediately runs the usuals order — adds all usuals + unusuals to cart."""
+    from search import add_to_cart
+    profile = load_profile(user_id)
+    access_token = profile.get("kroger_access_token")
+
+    if not access_token:
+        refresh_token = profile.get("kroger_refresh_token")
+        if refresh_token:
+            new_access, new_refresh = refresh_kroger_token(refresh_token)
+            if new_access:
+                profile["kroger_access_token"] = new_access
+                if new_refresh:
+                    profile["kroger_refresh_token"] = new_refresh
+                save_profile(user_id, profile)
+                access_token = new_access
+        if not access_token:
+            return {"status": "need_auth"}
+
+    location_id = profile.get("location_id")
+    all_items = profile.get("usuals_products", []) + profile.get("unusuals", [])
+
+    added = 0
+    failed = 0
+    seen_upcs = set()
+
+    for item in all_items:
+        upc = item.get("upc")
+        if not upc or upc in seen_upcs:
+            continue
+        seen_upcs.add(upc)
+        status_code, _ = add_to_cart(
+            upc=upc,
+            quantity=1,
+            location_id=location_id,
+            access_token=access_token
+        )
+        if status_code == 401:
+            refresh_token = profile.get("kroger_refresh_token")
+            if refresh_token:
+                new_access, new_refresh = refresh_kroger_token(refresh_token)
+                if new_access:
+                    profile["kroger_access_token"] = new_access
+                    if new_refresh:
+                        profile["kroger_refresh_token"] = new_refresh
+                    save_profile(user_id, profile)
+                    access_token = new_access
+                    status_code, _ = add_to_cart(upc=upc, quantity=1,
+                                                  location_id=location_id,
+                                                  access_token=access_token)
+        if status_code in (200, 201, 204):
+            added += 1
+        else:
+            failed += 1
+
+    store_name = profile.get("store_name", "Kroger")
+    return {"status": "success", "added": added, "failed": failed, "store_name": store_name}
+
+# ── Product Search Endpoint ───────────────────────────────────────────────────
+
+class SearchRequest(BaseModel):
+    user_id: str
+    term: str
+    limit: int = 3
+
+@app.post("/search")
+async def search_products(req: SearchRequest):
+    """Natural language → understand_task() → Kroger searches → product options."""
+    profile = load_profile(req.user_id)
+    zip_code = profile.get("zip_code", "10001")
+    location_id = profile.get("location_id")
+
+    if not location_id:
+        return {"status": "error", "detail": "No store selected"}
+
+    # Translate natural language to specific search terms
+    terms = understand_task(req.term, history=[], profile=profile)
+
+    # Cap at 4 terms to stay token/request efficient
+    terms = terms[:4]
+
+    results = []
+    for term in terms:
+        if isinstance(term, dict):
+            term = term.get("term", "")
+        if not term:
+            continue
+        data = search_kroger(term, zip_code=zip_code, location_id=location_id, limit=req.limit)
+        for p in data.get("results", []):
+            if not p.get("upc"):
+                continue
+            results.append({
+                "upc": p["upc"],
+                "name": p.get("name", ""),
+                "brand": p.get("brand", ""),
+                "image": p.get("image"),
+                "regular_price": p.get("regular_price"),
+                "sale_price": p.get("sale_price"),
+                "term": term
+            })
+
+    return {"status": "ok", "results": results}
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("APP_PORT", "8767"))

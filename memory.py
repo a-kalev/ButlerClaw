@@ -31,7 +31,9 @@ def load_profile(user_id):
         "family": {},
         "dietary": [],
         "preferences": [],
-        "usuals": [],
+        "usuals": [], #AI-learnt usuals
+        "usuals_products": [],       # User-added usuals — full product objects (name, upc, image, price, brand)
+        "unusuals": [],              # One-time adds for next scheduled run — cleared after use
         "budget": None,
         "notes": "",
         # ── Claw Engine additions ──
@@ -41,7 +43,8 @@ def load_profile(user_id):
         "claws": {
             "weekly_autopilot": {
                 "enabled": False,
-                "day": "sunday",
+                "mode": "remind",        # "auto" | "remind"
+                "day": "friday",
                 "time": "18:00"
             },
             "sale_hunter": {
@@ -191,3 +194,63 @@ def get_all_scheduled_jobs():
         job["result"]  = json.loads(job["result"]  or "{}")
         jobs.append(job)
     return jobs
+# ── Usuals helpers ─────────────────────────────────────────────────────────────
+# usuals_products schema per item:
+# { "upc": "...", "name": "...", "brand": "...", "image": "...",
+#   "regular_price": 3.99, "sale_price": null, "term": "whole milk" }
+
+def get_usuals_products(user_id: str) -> list:
+    profile = load_profile(user_id)
+    return profile.get("usuals_products", [])
+
+def add_usual_product(user_id: str, product: dict) -> list:
+    """Adds product to usuals_products (deduped by upc). Syncs plain usuals for AI."""
+    profile = load_profile(user_id)
+    products = profile.get("usuals_products", [])
+    upc = product.get("upc", "")
+    if upc and any(p.get("upc") == upc for p in products):
+        return products
+    products.append(product)
+    profile["usuals_products"] = products
+    profile["usuals"] = [p.get("term") or p.get("name", "") for p in products]
+    save_profile(user_id, profile)
+    return products
+
+def remove_usual_product(user_id: str, upc: str) -> list:
+    """Removes product by upc. Syncs plain usuals for AI."""
+    profile = load_profile(user_id)
+    products = [p for p in profile.get("usuals_products", []) if p.get("upc") != upc]
+    profile["usuals_products"] = products
+    profile["usuals"] = [p.get("term") or p.get("name", "") for p in products]
+    save_profile(user_id, profile)
+    return products
+
+# ── Unusuals helpers ───────────────────────────────────────────────────────────
+
+def get_unusuals(user_id: str) -> list:
+    return load_profile(user_id).get("unusuals", [])
+
+def add_unusual(user_id: str, product: dict) -> list:
+    """One-time add for next scheduled run. Deduped by upc."""
+    profile = load_profile(user_id)
+    unusuals = profile.get("unusuals", [])
+    upc = product.get("upc", "")
+    if upc and any(p.get("upc") == upc for p in unusuals):
+        return unusuals
+    unusuals.append(product)
+    profile["unusuals"] = unusuals
+    save_profile(user_id, profile)
+    return unusuals
+
+def remove_unusual(user_id: str, upc: str) -> list:
+    profile = load_profile(user_id)
+    unusuals = [p for p in profile.get("unusuals", []) if p.get("upc") != upc]
+    profile["unusuals"] = unusuals
+    save_profile(user_id, profile)
+    return unusuals
+
+def clear_unusuals(user_id: str):
+    """Called after scheduled run completes."""
+    profile = load_profile(user_id)
+    profile["unusuals"] = []
+    save_profile(user_id, profile)

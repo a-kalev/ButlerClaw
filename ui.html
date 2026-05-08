@@ -898,6 +898,84 @@
         }
         .add-all-btn:hover { opacity: 0.9; }
         .add-all-btn:disabled { opacity: 0.6; cursor: wait;}
+       /* ── MY LIST PAGE ── */
+	.mylist-section { padding: 16px 22px; border-bottom: 1px solid var(--border-light); }
+	.mylist-section:last-child { border-bottom: none; }
+	.mylist-section-title {
+	    font-size: 0.64rem; font-weight: 500; letter-spacing: 0.16em;
+	    text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+	}
+	.mylist-item {
+	    display: flex; align-items: center; gap: 12px;
+	    padding: 8px 0; border-bottom: 1px solid var(--border-light);
+	}
+	.mylist-item:last-child { border-bottom: none; }
+	.mylist-item img { width: 44px; height: 44px; object-fit: contain; border-radius: 8px; background: var(--cream); flex-shrink: 0; }
+	.mylist-item-info { flex: 1; }
+	.mylist-item-name { font-size: 0.88rem; font-weight: 500; color: var(--ink); line-height: 1.35; }
+	.mylist-item-price { font-size: 0.78rem; color: var(--ink-light); margin-top: 2px; }
+	.mylist-remove-btn {
+	    background: none; border: 1px solid var(--border); border-radius: 20px;
+	    padding: 4px 10px; font-size: 0.72rem; color: var(--ink-light);
+	    cursor: pointer; flex-shrink: 0; transition: border-color 0.2s, color 0.2s;
+	}
+	.mylist-remove-btn:hover { border-color: var(--red); color: var(--red); }
+	.mylist-run-btn {
+	    width: calc(100% - 44px); margin: 16px 22px;
+	    background: linear-gradient(135deg, var(--sale), #155a33);
+	    color: white; border: none; border-radius: 12px; padding: 14px;
+	    font-size: 0.95rem; font-family: 'DM Sans', sans-serif; font-weight: 600;
+	    cursor: pointer; box-shadow: 0 4px 16px rgba(26,110,62,0.25);
+	    transition: opacity 0.2s; letter-spacing: 0.02em;
+	}
+	.mylist-run-btn:hover { opacity: 0.9; }
+	.mylist-run-btn:disabled { opacity: 0.6; cursor: wait; }
+	.mylist-autopilot-bar {
+	    margin: 0 22px 16px; padding: 14px 16px;
+	    background: var(--card-bg); border: 1px solid var(--border-light);
+	    border-radius: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+	}
+	.mylist-autopilot-bar select {
+	    border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px;
+	    font-size: 0.8rem; font-family: 'DM Sans', sans-serif;
+	    background: var(--cream); color: var(--ink); outline: none;
+	}
+	.mylist-toggle {
+	    position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0;
+	}
+	.mylist-toggle input { opacity: 0; width: 0; height: 0; }
+	.mylist-toggle-slider {
+	    position: absolute; cursor: pointer; inset: 0;
+	    background: var(--border); border-radius: 22px; transition: 0.2s;
+	}
+	.mylist-toggle-slider:before {
+	    content: ''; position: absolute; width: 16px; height: 16px;
+	    left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s;
+	}
+	.mylist-toggle input:checked + .mylist-toggle-slider { background: var(--sale); }
+	.mylist-toggle input:checked + .mylist-toggle-slider:before { transform: translateX(18px); }
+	.onboarding-grid {
+	    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 22px 16px;
+	}
+	.onboarding-item {
+	    background: var(--card-bg); border: 2px solid var(--border-light);
+	    border-radius: 12px; padding: 10px; display: flex; flex-direction: column;
+	    align-items: center; gap: 6px; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+	    text-align: center;
+	}
+	.onboarding-item.selected { border-color: var(--sale); background: var(--sale-bg); }
+	.onboarding-item img { width: 52px; height: 52px; object-fit: contain; border-radius: 8px; background: var(--cream); }
+	.onboarding-item-name { font-size: 0.75rem; font-weight: 500; color: var(--ink); line-height: 1.3; }
+	.onboarding-item-price { font-size: 0.72rem; color: var(--ink-light); }
+	.onboarding-done-btn {
+	    width: calc(100% - 44px); margin: 8px 22px 16px;
+	    background: linear-gradient(135deg, var(--red), var(--red-dark));
+	    color: white; border: none; border-radius: 12px; padding: 14px;
+	    font-size: 0.95rem; font-family: 'DM Sans', sans-serif; font-weight: 600;
+	    cursor: pointer; box-shadow: 0 4px 16px rgba(184,50,50,0.25);
+	    transition: opacity 0.2s; letter-spacing: 0.02em;
+	}
+	.onboarding-done-btn:hover { opacity: 0.9; } 
     </style>
 </head>
 <body>
@@ -979,6 +1057,10 @@
     </a>
 </div>
 
+<!-- ── PAGE: MY LIST ── -->
+<div id="page-mylist" class="page" style="display:none;">
+    <div id="mylist-content"></div>
+</div>
 <!-- ── BOTTOM DOCK (input + nav) ── -->
 <div class="bottom-dock">
     <!-- Input bar (hidden on meal planner) -->
@@ -994,6 +1076,10 @@
         <button class="nav-btn active" id="nav-shop" onclick="setPage('shop')">
             <span style="font-size:1.4rem;">🛒</span>
             <span>Shop</span>
+        </button>
+	<button class="nav-btn" id="nav-mylist" onclick="setPage('mylist')">
+            <span style="font-size:1.4rem;">📋</span>
+            <span>My List</span>
         </button>
         <button class="nav-btn" id="nav-autocart" onclick="setPage('autocart')">
             <img src="/icon2.png" style="width:26px;height:26px;border-radius:50%;background:#000;object-fit:cover;"/>
@@ -1109,6 +1195,7 @@ function setPage(page) {
     document.getElementById('page-shop').style.display = 'none';
     document.getElementById('page-autocart').style.display = 'none';
     document.getElementById('page-mealplan').style.display = 'none';
+    document.getElementById('page-mylist').style.display = 'none';
 
     // Deactivate all nav buttons
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -1135,6 +1222,435 @@ function setPage(page) {
         loadClawJobs();
     } else if (page === 'mealplan') {
         inputWrap.style.display = 'none';
+    } else if (page === 'mylist') {
+        inputWrap.style.display = 'none';
+        loadMyList();
+    }
+}
+
+// ── My List ──────────────────────────────────────────────────────────────────
+
+async function loadMyList() {
+    const content = document.getElementById('mylist-content');
+    content.innerHTML = `<div style="text-align:center;padding:32px;color:var(--ink-light);font-style:italic;font-size:0.88rem;">Loading your list…</div>`;
+    try {
+        const res = await fetch('/usuals?user_id=' + USER_ID);
+        const data = await res.json();
+        renderMyList(data);
+    } catch(e) {
+        content.innerHTML = `<div style="text-align:center;padding:32px;color:var(--red);font-size:0.88rem;">Could not load your list.</div>`;
+    }
+}
+
+function renderMyList(data) {
+    const content = document.getElementById('mylist-content');
+    content.innerHTML = '';
+    const usuals = data.usuals || [];
+    const unusuals = data.unusuals || [];
+    const autopilot = data.autopilot || {};
+
+    // ── Empty state → show onboarding ──
+    if (usuals.length === 0) {
+        renderOnboarding(content);
+        return;
+    }
+
+    // ── Autopilot bar ──
+    const bar = document.createElement('div');
+    bar.className = 'mylist-autopilot-bar';
+    const isEnabled = autopilot.enabled || false;
+    const mode = autopilot.mode || 'remind';
+    const day = autopilot.day || 'friday';
+    const time = autopilot.time || '18:00';
+    bar.innerHTML = `
+        <label class="mylist-toggle">
+            <input type="checkbox" id="autopilot-toggle" ${isEnabled ? 'checked' : ''} onchange="saveAutopilot()">
+            <span class="mylist-toggle-slider"></span>
+        </label>
+        <span style="font-size:0.82rem;font-weight:500;color:var(--ink);">Weekly autopilot</span>
+        <select id="autopilot-mode" onchange="saveAutopilot()" style="${isEnabled ? '' : 'opacity:0.4;pointer-events:none;'}">
+            <option value="remind" ${mode==='remind'?'selected':''}>Remind me</option>
+            <option value="auto" ${mode==='auto'?'selected':''}>Auto-add</option>
+        </select>
+        <select id="autopilot-day" onchange="saveAutopilot()" style="${isEnabled ? '' : 'opacity:0.4;pointer-events:none;'}">
+            <option value="sunday" ${day==='sunday'?'selected':''}>Sunday</option>
+            <option value="monday" ${day==='monday'?'selected':''}>Monday</option>
+	    <option value="tuesday" ${day==='monday'?'selected':''}>Tuesday</option>
+	    <option value="wednesday" ${day==='monday'?'selected':''}>Wednesday</option>
+	    <option value="thursday" ${day==='monday'?'selected':''}>Thursday</option>
+	    <option value="friday" ${day==='monday'?'selected':''}>Friday</option>
+            <option value="saturday" ${day==='saturday'?'selected':''}>Saturday</option>
+        </select>
+        <select id="autopilot-time" onchange="saveAutopilot()" style="${isEnabled ? '' : 'opacity:0.4;pointer-events:none;'}">
+            <option value="08:00" ${time==='08:00'?'selected':''}>8am</option>
+	    <option value="10:00" ${time==='10:00'?'selected':''}>10am</option>
+            <option value="12:00" ${time==='12:00'?'selected':''}>12pm</option>
+	    <option value="14:00" ${time==='14:00'?'selected':''}>2pm</option>
+	    <option value="16:00" ${time==='q6:00'?'selected':''}>4pm</option>
+            <option value="18:00" ${time==='18:00'?'selected':''}>6pm</option>
+            <option value="20:00" ${time==='20:00'?'selected':''}>8pm</option>
+        </select>
+    `;
+    content.appendChild(bar);
+
+    // ── Add checked to cart button ──
+    const cartBtn = document.createElement('button');
+    cartBtn.className = 'mylist-run-btn';
+    cartBtn.id = 'mylist-cart-btn';
+    cartBtn.textContent = '🛒 Add Checked Items to Cart (0)';
+    cartBtn.onclick = () => addCheckedToCart(cartBtn, usuals, unusuals);
+    content.appendChild(cartBtn);
+
+    // ── Weekly usuals section ──
+    const usualsSection = document.createElement('div');
+    usualsSection.className = 'mylist-section';
+    const usualsHeader = document.createElement('div');
+    usualsHeader.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;';
+    usualsHeader.innerHTML = `
+    <div style="display:flex; flex-direction:column; align-items:flex-start;">
+        <div class="mylist-section-title" style="margin-bottom:4px;">Every Week</div>
+        <label style="display:flex; align-items:center; gap:6px; font-size:0.75rem; color:var(--ink-light); cursor:pointer;">
+            <input type="checkbox" id="check-all-usuals"> Check all
+        </label>
+    </div>`;
+    usualsSection.appendChild(usualsHeader);
+    for (const p of usuals) {
+        usualsSection.appendChild(makeListItem(p, 'usual'));
+    }
+    
+    content.appendChild(usualsSection);
+
+    // ── Time-to-time section ──
+    const unusualsSection = document.createElement('div');
+    unusualsSection.className = 'mylist-section';
+    const unusualsHeader = document.createElement('div');
+    unusualsHeader.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;';
+    //usualsHeader.innerHTML = `
+    //usualsHeader.innerHTML = `
+    unusualsHeader.innerHTML = `
+    <div style="display:flex; flex-direction:column; align-items:flex-start;">
+        <div class="mylist-section-title" style="margin-bottom:0;">Time to Time</div>
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--ink-light);cursor:pointer;">
+            <input type="checkbox" id="check-all-unusuals"> Check all
+        </label>
+    </div>`;
+    unusualsSection.appendChild(unusualsHeader);
+    if (unusuals.length > 0) {
+        for (const p of unusuals) {
+            unusualsSection.appendChild(makeListItem(p, 'unusual'));
+        }
+    } else {
+        const empty = document.createElement('div');
+        empty.style.cssText = 'font-size:0.82rem;color:var(--ink-light);font-style:italic;padding:4px 0 8px;';
+        empty.textContent = 'Nothing here yet — search below to add.';
+        unusualsSection.appendChild(empty);
+    }
+    content.appendChild(unusualsSection);
+
+    // ── Search to add ──
+    const searchSection = document.createElement('div');
+    searchSection.className = 'mylist-section';
+    searchSection.innerHTML = `
+        <div class="mylist-section-title">Find & Add Items</div>
+        <div style="display:flex;gap:8px;">
+            <input id="item-search" type="text" placeholder="e.g. show me milk options, ice cream, sparkling water…"
+                style="flex:1;border:1.5px solid var(--border);border-radius:20px;padding:9px 16px;font-size:0.85rem;font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);outline:none;"
+                onkeydown="if(event.key==='Enter') searchItems()"/>
+            <button onclick="searchItems()" style="background:linear-gradient(135deg,var(--red),var(--red-dark));color:white;border:none;border-radius:20px;padding:9px 18px;font-size:0.82rem;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;">Find</button>
+        </div>
+        <div id="item-search-results" style="margin-top:10px;"></div>
+    `;
+    // Wire check-all after DOM is built
+    document.getElementById('check-all-usuals')?.addEventListener('change', function() {
+        document.querySelectorAll('.mylist-check-usual').forEach(cb => cb.checked = this.checked);
+        updateCartBtnCount();
+    });
+    document.getElementById('check-all-unusuals')?.addEventListener('change', function() {
+        document.querySelectorAll('.mylist-check-unusual').forEach(cb => cb.checked = this.checked);
+        updateCartBtnCount();
+    });
+    content.appendChild(searchSection);
+}
+
+function makeListItem(p, type) {
+    const item = document.createElement('div');
+    item.className = 'mylist-item';
+    item.dataset.upc = p.upc;
+    item.dataset.type = type;
+    const priceStr = p.sale_price
+        ? `<span style="color:var(--sale);font-weight:600;">$${p.sale_price}</span> <span style="text-decoration:line-through;opacity:0.6;">$${p.regular_price}</span> <span style="color:var(--sale);font-size:0.65rem;font-weight:600;">SALE</span>`
+        : p.regular_price ? `$${p.regular_price}` : '';
+    item.innerHTML = `
+        <input type="checkbox" class="mylist-check mylist-check-${type}" data-upc="${p.upc}"
+            style="width:18px;height:18px;accent-color:var(--sale);flex-shrink:0;cursor:pointer;"
+            onchange="updateCartBtnCount()">
+        ${p.image ? `<img src="${p.image}" alt="${p.name}">` : ''}
+        <div class="mylist-item-info">
+            <div class="mylist-item-name">${p.name}</div>
+            <div class="mylist-item-price">${priceStr}</div>
+        </div>
+        <button class="mylist-remove-btn" onclick="removeItem('${p.upc}','${type}')">Remove</button>
+    `;
+    return item;
+}
+
+async function removeItem(upc, type) {
+    const endpoint = type === 'usual' ? '/usuals/remove' : '/unusuals/remove';
+    await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: USER_ID, upc })
+    });
+    loadMyList();
+}
+
+async function saveAutopilot() {
+    const enabled = document.getElementById('autopilot-toggle').checked;
+    const mode = document.getElementById('autopilot-mode').value;
+    const day = document.getElementById('autopilot-day').value;
+    const time = document.getElementById('autopilot-time').value;
+    // Gray out selects when disabled
+    ['autopilot-mode','autopilot-day','autopilot-time'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.opacity = enabled ? '1' : '0.4';
+        if (el) el.style.pointerEvents = enabled ? '' : 'none';
+    });
+    await fetch('/usuals/autopilot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: USER_ID, enabled, mode, day, time })
+    });
+    showCartToast(enabled ? '✅ Autopilot saved.' : 'Autopilot turned off.', 'success');
+}
+
+async function runUsuals(btn) {
+    btn.disabled = true;
+    btn.textContent = '🛒 Adding to cart…';
+    try {
+        const res = await fetch('/usuals/run?user_id=' + USER_ID, { method: 'POST' });
+        const data = await res.json();
+        if (data.status === 'need_auth') {
+            btn.disabled = false;
+            btn.textContent = '🛒 Add My Usuals to Cart';
+            showCartToast('🔐 Please sign in to Kroger first.', 'error');
+            window.open(`/kroger-login?user_id=${USER_ID}&upc=pending&product_name=usuals`, '_blank');
+            return;
+        }
+        btn.textContent = `✅ ${data.added} items added!`;
+        showCartToast(`✅ ${data.added} items added to your cart!`, 'success');
+        showCartBar(data.store_name || 'Kroger');
+        // Reload to clear unusuals
+        setTimeout(() => loadMyList(), 1500);
+    } catch(e) {
+        btn.disabled = false;
+        btn.textContent = '🛒 Add My Usuals to Cart';
+        showCartToast('❌ Something went wrong.', 'error');
+    }
+}
+
+async function searchItems() {
+    const input = document.getElementById('item-search');
+    const term = input.value.trim();
+    if (!term) return;
+    const resultsDiv = document.getElementById('item-search-results');
+    resultsDiv.innerHTML = `<div style="font-size:0.8rem;color:var(--ink-light);font-style:italic;padding:4px 0;">Searching…</div>`;
+    try {
+        const res = await fetch('/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: USER_ID, term, limit: 3 })
+        });
+        const data = await res.json();
+        resultsDiv.innerHTML = '';
+        if (!data.results || data.results.length === 0) {
+            resultsDiv.innerHTML = `<div style="font-size:0.8rem;color:var(--ink-light);">No results. Try a different term.</div>`;
+            return;
+        }
+        for (const p of data.results) {
+            const row = document.createElement('div');
+            row.className = 'mylist-item';
+            const priceStr = p.sale_price
+                ? `<span style="color:var(--sale);font-weight:600;">$${p.sale_price}</span> <span style="text-decoration:line-through;opacity:0.6;">$${p.regular_price}</span>`
+                : p.regular_price ? `$${p.regular_price}` : '';
+            row.innerHTML = `
+                ${p.image ? `<img src="${p.image}" alt="${p.name}" style="width:44px;height:44px;object-fit:contain;border-radius:8px;background:var(--cream);flex-shrink:0;">` : ''}
+                <div class="mylist-item-info">
+                    <div class="mylist-item-name">${p.name}</div>
+                    <div class="mylist-item-price">${priceStr}</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
+                    <button class="mylist-remove-btn" style="border-color:var(--sale);color:var(--sale);white-space:nowrap;"
+                        onclick="saveToList(this, ${JSON.stringify(p).replace(/"/g, '&quot;')}, 'usual')">+ Weekly</button>
+                    <button class="mylist-remove-btn" style="white-space:nowrap;"
+                        onclick="saveToList(this, ${JSON.stringify(p).replace(/"/g, '&quot;')}, 'unusual')">+ Time to Time</button>
+                </div>
+            `;
+            resultsDiv.appendChild(row);
+        }
+    } catch(e) {
+        resultsDiv.innerHTML = `<div style="font-size:0.8rem;color:var(--red);">Search failed. Please try again.</div>`;
+    }
+}
+
+async function saveToList(btn, product, type) {
+    btn.textContent = '✅ Saved';
+    btn.disabled = true;
+    const endpoint = type === 'usual' ? '/usuals/add' : '/unusuals/add';
+    await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: USER_ID, product })
+    });
+    showCartToast(`✅ Added to ${type === 'usual' ? 'Weekly' : 'Time to Time'} list.`, 'success');
+    setTimeout(() => loadMyList(), 800);
+}
+
+
+function toggleCheckAll(type, checked) {
+    document.querySelectorAll(`.mylist-check-${type}`).forEach(cb => cb.checked = checked);
+    updateCartBtnCount();
+}
+
+function updateCartBtnCount() {
+    const checked = document.querySelectorAll('.mylist-check:checked').length;
+    const btn = document.getElementById('mylist-cart-btn');
+    if (btn) btn.textContent = `🛒 Add Checked Items to Cart (${checked})`;
+}
+
+async function addCheckedToCart(btn, usuals, unusuals) {
+    const checkedUpcs = new Set(
+        [...document.querySelectorAll('.mylist-check:checked')].map(cb => cb.dataset.upc)
+    );
+    if (checkedUpcs.size === 0) {
+        showCartToast('Please check at least one item.', 'error');
+        return;
+    }
+    btn.disabled = true;
+    btn.textContent = '🛒 Adding to cart…';
+
+    const allItems = [...usuals, ...unusuals].filter(p => checkedUpcs.has(p.upc));
+
+    try {
+        let added = 0, failed = 0;
+        for (const item of allItems) {
+            const res = await fetch('/add-to-cart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: USER_ID, upc: item.upc, product_name: item.name, quantity: 1 })
+            });
+            const data = await res.json();
+            if (data.status === 'need_auth') {
+                btn.disabled = false;
+                btn.textContent = `🛒 Add Checked Items to Cart (${checkedUpcs.size})`;
+                showCartToast('🔐 Please sign in to Kroger first.', 'error');
+                window.open(`/kroger-login?user_id=${USER_ID}&upc=${item.upc}&product_name=${encodeURIComponent(item.name)}`, '_blank');
+                return;
+            }
+            if (data.status === 'success') added++; else failed++;
+        }
+        btn.textContent = `✅ ${added} items added!`;
+        showCartToast(`✅ ${added} items added to your cart!`, 'success');
+        const profile = await fetch('/get-profile?user_id=' + USER_ID).then(r=>r.json());
+        showCartBar(profile.store_name || 'Kroger');
+    } catch(e) {
+        btn.disabled = false;
+        btn.textContent = `🛒 Add Checked Items to Cart (${checkedUpcs.size})`;
+        showCartToast('❌ Something went wrong.', 'error');
+    }
+}
+
+async function renderOnboarding(container, isAddMore = false) {
+    container.innerHTML = `<div style="text-align:center;padding:32px;color:var(--ink-light);font-style:italic;font-size:0.88rem;">Finding items at your store…</div>`;
+    try {
+        const res = await fetch('/claw/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: USER_ID, task_type: 'usuals_onboarding', payload: {} })
+        });
+        const data = await res.json();
+        if (data.result?.status !== 'done') {
+            container.innerHTML = `<div style="text-align:center;padding:32px;color:var(--red);font-size:0.88rem;">Could not load items. Make sure your store is set.</div>`;
+            return;
+        }
+        container.innerHTML = '';
+        const heading = document.createElement('div');
+        heading.style.cssText = 'padding:20px 22px 8px;';
+        heading.innerHTML = `
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:var(--ink);margin-bottom:6px;">
+                ${isAddMore ? 'Add More Items' : 'Build Your Weekly List'}
+            </div>
+            <div style="font-size:0.83rem;color:var(--ink-light);line-height:1.6;">
+                ${isAddMore ? 'Tap items to add to your usuals.' : 'Tap the items you buy every week. I\'ll remember them.'}
+            </div>`;
+        container.appendChild(heading);
+
+        const selectedUpcs = new Set();
+
+        for (const section of data.result.sections || []) {
+            const sectionTitle = document.createElement('div');
+            sectionTitle.style.cssText = 'padding:12px 22px 6px;font-size:0.64rem;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--gold);';
+            sectionTitle.textContent = section.title;
+            container.appendChild(sectionTitle);
+
+            const grid = document.createElement('div');
+            grid.className = 'onboarding-grid';
+            for (const item of section.items || []) {
+                const card = document.createElement('div');
+                card.className = 'onboarding-item';
+                card.dataset.upc = item.upc;
+                const priceStr = item.sale
+                    ? `<span style="color:var(--sale);font-weight:600;">$${item.price}</span> <span style="font-size:0.65rem;color:var(--sale);">SALE</span>`
+                    : item.price ? `$${item.price}` : '';
+                card.innerHTML = `
+                    ${item.image ? `<img src="${item.image}" alt="${item.name}">` : ''}
+                    <div class="onboarding-item-name">${item.name}</div>
+                    <div class="onboarding-item-price">${priceStr}</div>
+                `;
+                card.onclick = () => {
+                    card.classList.toggle('selected');
+                    if (card.classList.contains('selected')) {
+                        selectedUpcs.add(item.upc);
+                    } else {
+                        selectedUpcs.delete(item.upc);
+                    }
+                    doneBtn.textContent = selectedUpcs.size > 0
+                        ? `✅ Add ${selectedUpcs.size} item${selectedUpcs.size>1?'s':''} to My List`
+                        : isAddMore ? 'Done' : 'Skip for now';
+                };
+                grid.appendChild(card);
+            }
+            container.appendChild(grid);
+        }
+
+        const doneBtn = document.createElement('button');
+        doneBtn.className = 'onboarding-done-btn';
+        doneBtn.textContent = isAddMore ? 'Done' : 'Skip for now';
+        doneBtn.onclick = async () => {
+            if (selectedUpcs.size === 0) { loadMyList(); return; }
+            doneBtn.disabled = true;
+            doneBtn.textContent = 'Saving…';
+            const allItems = (data.result.sections || []).flatMap(s => s.items || []);
+            for (const item of allItems) {
+                if (!selectedUpcs.has(item.upc)) continue;
+                const product = {
+                    upc: item.upc, name: item.name, brand: '',
+                    image: item.image,
+                    regular_price: item.sale ? null : item.price,
+                    sale_price: item.sale ? item.price : null,
+                    term: item.reason
+                };
+                await fetch('/usuals/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: USER_ID, product })
+                });
+            }
+            loadMyList();
+        };
+        container.appendChild(doneBtn);
+
+    } catch(e) {
+        container.innerHTML = `<div style="text-align:center;padding:32px;color:var(--red);font-size:0.88rem;">Something went wrong. Please try again.</div>`;
     }
 }
 
@@ -1798,7 +2314,7 @@ async function send() {
         <div class="coming-soon-bubble" id="coming-soon-bubble">
             <div style="font-weight:600; margin-bottom:8px; color:var(--ink);">On the roadmap 🗺️</div>
             <div style="margin-bottom:6px;">🔍 <strong>Sale Hunter</strong> — monitors your usuals for deals daily</div>
-            <div style="margin-bottom:6px;">📅 <strong>Weekly Autopilot</strong> — shops for you every Sunday automatically</div>
+            <div style="margin-bottom:6px;">📅 <strong>Weekly Autopilot</strong> — shops for you every week automatically</div>
             <div style="margin-bottom:6px;">📦 <strong>Restock Monitor</strong> — never run out of what you use regularly</div>
             <div>🏪 <strong>More Stores</strong> — Instacart integration (85,000+ stores)</div>
         </div>

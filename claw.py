@@ -82,9 +82,11 @@ class ClawTask:
 def _load_registry():
     from tasks.auto_cart import AutoCartTask
     from tasks.meal_planner import MealPlannerTask
+    from tasks.usuals_onboarding import UsualsOnboardingTask
     return {
         "auto_cart": AutoCartTask,
         "meal_planner": MealPlannerTask,
+        "usuals_onboarding": UsualsOnboardingTask,
     }
 
 TASK_REGISTRY: dict = _load_registry()
