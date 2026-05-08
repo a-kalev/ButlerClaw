@@ -384,12 +384,13 @@
 
         .input-bar {
             background: transparent;
-            padding: 14px 28px;
+            padding: 14px 16px;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             max-width: 780px;
             width: 100%;
             margin: 0 auto;
+            box-sizing: border-box;
         }
 
         #msg {
@@ -1068,7 +1069,7 @@
         <div class="input-bar">
             <input type="text" id="msg" placeholder="e.g. I want to make lasagna for 6 people…" onkeydown="if(event.key==='Enter') currentPage === 'autocart' ? sendClaw() : send()"/>
             <button id="send-btn" onclick="send()">Ask Butler</button>
-            <button id="claw-btn" onclick="sendClaw()" style="display:none; background:linear-gradient(135deg,#c9940a,#a07608); color:var(--ink); border:none; border-radius:28px; padding:12px 26px; font-size:0.9rem; font-family:'DM Sans',sans-serif; font-weight:600; cursor:pointer; white-space:nowrap; box-shadow:0 4px 16px rgba(201,148,10,0.3); letter-spacing:0.02em;"><img src="/icon2.png" style="width:24px;height:24px;border-radius:50%;background:#000;object-fit:cover;vertical-align:middle;margin-right:4px;"> Add to Cart</button>
+            <button id="claw-btn" onclick="sendClaw()" style="display:none; background:linear-gradient(135deg,#c9940a,#a07608); color:var(--ink); border:none; border-radius:28px; padding:12px 14px; font-size:0.85rem; font-family:'DM Sans',sans-serif; font-weight:600; cursor:pointer; white-space:nowrap; box-shadow:0 4px 16px rgba(201,148,10,0.3); letter-spacing:0.02em;"><img src="/icon2.png" style="width:24px;height:24px;border-radius:50%;background:#000;object-fit:cover;vertical-align:middle;margin-right:4px;"> Add to Cart</button>
         </div>
     </div>
     <!-- Bottom nav -->
