@@ -83,10 +83,12 @@ def _load_registry():
     from tasks.auto_cart import AutoCartTask
     from tasks.meal_planner import MealPlannerTask
     from tasks.usuals_onboarding import UsualsOnboardingTask
+    from tasks.sale_hunter import SaleHunterTask
     return {
         "auto_cart": AutoCartTask,
         "meal_planner": MealPlannerTask,
         "usuals_onboarding": UsualsOnboardingTask,
+        "sale_hunter": SaleHunterTask,
     }
 
 TASK_REGISTRY: dict = _load_registry()

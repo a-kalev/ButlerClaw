@@ -1249,6 +1249,7 @@ function renderMyList(data) {
     const usuals = data.usuals || [];
     const unusuals = data.unusuals || [];
     const autopilot = data.autopilot || {};
+    const saleHunter = data.sale_hunter || {};
 
     // ── Empty state → show onboarding ──
     if (usuals.length === 0) {
@@ -1294,6 +1295,29 @@ function renderMyList(data) {
     `;
     content.appendChild(bar);
 
+    // ── Sale Hunter bar ──
+    const saleBar = document.createElement('div');
+    saleBar.className = 'mylist-autopilot-bar';
+    const saleEnabled = saleHunter.enabled || false;
+    saleBar.innerHTML = `
+        <label class="mylist-toggle">
+            <input type="checkbox" id="sale-hunter-toggle" ${saleEnabled ? 'checked' : ''}>
+            <span class="mylist-toggle-slider"></span>
+        </label>
+        <span style="font-size:0.82rem;font-weight:500;color:var(--ink);">🔔 Sale alerts on my usuals</span>
+        <span style="font-size:0.75rem;color:var(--ink-light);margin-left:auto;">Daily · push notify</span>
+    `;
+    content.appendChild(saleBar);
+    // Wire after DOM append
+    document.getElementById('sale-hunter-toggle').addEventListener('change', async function() {
+        await fetch('/sale-hunter/toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: USER_ID, enabled: this.checked })
+        });
+        showCartToast(this.checked ? '🔔 Sale alerts on.' : 'Sale alerts off.', 'success');
+    });
+
     // ── Add checked to cart button ──
     const cartBtn = document.createElement('button');
     cartBtn.className = 'mylist-run-btn';
@@ -1301,6 +1325,20 @@ function renderMyList(data) {
     cartBtn.textContent = '🛒 Add Checked Items to Cart (0)';
     cartBtn.onclick = () => addCheckedToCart(cartBtn, usuals, unusuals);
     content.appendChild(cartBtn);
+
+    // ── On Sale Now section (items from usuals currently on sale) ──
+    const onSaleItems = usuals.filter(p => p.sale_price && p.sale_price !== p.regular_price);
+    if (onSaleItems.length > 0) {
+        const saleSection = document.createElement('div');
+        saleSection.className = 'mylist-section';
+        saleSection.style.background = 'var(--sale-bg)';
+        saleSection.style.borderLeft = '3px solid var(--sale)';
+        saleSection.innerHTML = `<div class="mylist-section-title" style="color:var(--sale);">🔥 On Sale Now</div>`;
+        for (const p of onSaleItems) {
+            saleSection.appendChild(makeListItem(p, 'usual'));
+        }
+        content.appendChild(saleSection);
+    }
 
     // ── Weekly usuals section ──
     const usualsSection = document.createElement('div');

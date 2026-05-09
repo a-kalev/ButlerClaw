@@ -21,15 +21,34 @@ import os
 scheduler = BackgroundScheduler()
 
 def run_daily_digest():
-    """Runs at 18:00 UTC daily. Populated when sale_hunter and other
-    background tasks are built."""
-    print("[scheduler] Daily digest sweep running")
+    """Runs at 08:00 UTC daily. Checks sales on usuals for all enabled users."""
+    from memory import init_db
+    import sqlite3, json
+    print("[scheduler] Sale Hunter daily sweep running")
+    try:
+        db_path = os.path.expanduser("~/butlerclaw2/butler.db")
+        conn = sqlite3.connect(db_path)
+        rows = conn.execute("SELECT user_id, profile FROM profiles").fetchall()
+        conn.close()
+        for user_id, profile_json in rows:
+            try:
+                profile = json.loads(profile_json)
+                cfg = profile.get("claws", {}).get("sale_hunter", {})
+                if not cfg.get("enabled", False):
+                    continue
+                job_id = str(_uuid.uuid4())[:8]
+                run_job(job_id, user_id, "sale_hunter", {})
+                print(f"[scheduler] Sale Hunter ran for {user_id}")
+            except Exception as e:
+                print(f"[scheduler] Sale Hunter error for {user_id}: {e}")
+    except Exception as e:
+        print(f"[scheduler] Sale Hunter sweep failed: {e}")
 
 @asynccontextmanager
 async def lifespan(app_instance):
     scheduler.add_job(
         run_daily_digest,
-        CronTrigger(hour=18, minute=0),
+        CronTrigger(hour=8, minute=0),
         id="daily_digest",
         replace_existing=True
     )
@@ -451,10 +470,12 @@ async def get_usuals(user_id: str):
     unusuals = get_unusuals(user_id)
     profile = load_profile(user_id)
     autopilot = profile.get("claws", {}).get("weekly_autopilot", {})
+    sale_hunter = profile.get("claws", {}).get("sale_hunter", {})
     return {
         "usuals": products,
         "unusuals": unusuals,
-        "autopilot": autopilot
+        "autopilot": autopilot,
+        "sale_hunter": sale_hunter
     }
 
 @app.post("/usuals/add")
@@ -601,6 +622,24 @@ async def search_products(req: SearchRequest):
             })
 
     return {"status": "ok", "results": results}
+
+# ── Sale Hunter Toggle ────────────────────────────────────────────────────────
+
+class SaleHunterToggleRequest(BaseModel):
+    user_id: str
+    enabled: bool
+
+@app.post("/sale-hunter/toggle")
+async def toggle_sale_hunter(req: SaleHunterToggleRequest):
+    profile = load_profile(req.user_id)
+    if "claws" not in profile:
+        profile["claws"] = {}
+    if "sale_hunter" not in profile["claws"]:
+        profile["claws"]["sale_hunter"] = {}
+    profile["claws"]["sale_hunter"]["enabled"] = req.enabled
+    save_profile(req.user_id, profile)
+    return {"status": "ok", "enabled": req.enabled}
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("APP_PORT", "8767"))
