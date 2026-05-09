@@ -7,7 +7,8 @@ from brain import understand_task, pick_best, build_greeting, extract_profile_up
 from search import search_kroger, get_nearby_stores, refresh_kroger_token
 from memory import (load_profile, save_profile, save_job, load_job, list_jobs,
                     get_usuals_products, add_usual_product, remove_usual_product,
-                    get_unusuals, add_unusual, remove_unusual, clear_unusuals)
+                    get_unusuals, add_unusual, remove_unusual, clear_unusuals,
+                    log_event, get_analytics_summary)
 from claw import run_job, TASK_REGISTRY
 from push import send_push, get_public_key
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -106,6 +107,11 @@ async def run_search(message, zip_code, user_id, history, location_id, store):
     updated_profile["zip_code"] = zip_code
     save_profile(user_id, updated_profile)
 
+    log_event("search", {
+        "term": message,
+        "store_chain": store.get("name", "").split(" - ")[0],
+        "zip_prefix": zip_code[:3] if zip_code else ""
+    })
     return {
         "greeting": greeting,
         "store": store,
@@ -300,6 +306,11 @@ async def add_to_cart_endpoint(req: AddToCartRequest):
     )
 
     if status in (200, 201, 204):
+        log_event("cart_add", {
+            "name": req.product_name,
+            "upc": req.upc,
+            "store_chain": load_profile(req.user_id).get("store_name", "").split(" - ")[0]
+        })
         return {"status": "success"}
     elif status == 401:
         # Token expired — try refresh before asking user to re-auth
@@ -359,6 +370,7 @@ async def claw_run(req: ClawRunRequest):
         return {"status": "error", "detail": f"Unknown task: {req.task_type}"}
     job_id = str(_uuid.uuid4())[:8]
     result = run_job(job_id, req.user_id, req.task_type, req.payload)
+    log_event("task_run", {"task_type": req.task_type})
     return {"job_id": job_id, "result": result.to_dict()}
 
 @app.get("/claw/jobs")
@@ -481,6 +493,7 @@ async def get_usuals(user_id: str):
 @app.post("/usuals/add")
 async def add_usual(req: UsualProductRequest):
     updated = add_usual_product(req.user_id, req.product)
+    log_event("usual_add", {"name": req.product.get("name", ""), "term": req.product.get("term", "")})
     return {"status": "ok", "usuals": updated}
 
 @app.post("/usuals/remove")
@@ -639,6 +652,13 @@ async def toggle_sale_hunter(req: SaleHunterToggleRequest):
     profile["claws"]["sale_hunter"]["enabled"] = req.enabled
     save_profile(req.user_id, profile)
     return {"status": "ok", "enabled": req.enabled}
+
+# ── Analytics ─────────────────────────────────────────────────────────────────
+
+@app.get("/analytics")
+async def analytics():
+    """Returns anonymous aggregated usage stats."""
+    return get_analytics_summary()
 
 if __name__ == "__main__":
     import uvicorn

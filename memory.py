@@ -254,3 +254,86 @@ def clear_unusuals(user_id: str):
     profile = load_profile(user_id)
     profile["unusuals"] = []
     save_profile(user_id, profile)
+
+# ── Analytics ─────────────────────────────────────────────────────────────────
+# Anonymous only — no user_id, no names, no emails.
+# event_type | data (json) | created_at
+
+def init_analytics():
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS analytics (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            event_type TEXT NOT NULL,
+            data       TEXT,
+            created_at TEXT DEFAULT (datetime('now'))
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+def log_event(event_type: str, data: dict):
+    """Log an anonymous analytics event. Never include PII."""
+    try:
+        init_analytics()
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute(
+            "INSERT INTO analytics (event_type, data) VALUES (?, ?)",
+            (event_type, json.dumps(data))
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"[analytics] log_event failed: {e}")
+
+def get_analytics_summary() -> dict:
+    """Returns aggregated event counts and top items. Used by /analytics endpoint."""
+    try:
+        init_analytics()
+        conn = sqlite3.connect(DB_PATH)
+
+        # Total counts per event type
+        rows = conn.execute(
+            "SELECT event_type, COUNT(*) as cnt FROM analytics GROUP BY event_type ORDER BY cnt DESC"
+        ).fetchall()
+        totals = {r[0]: r[1] for r in rows}
+
+        # Top search terms
+        searches = conn.execute(
+            """SELECT json_extract(data, '$.term') as term, COUNT(*) as cnt
+               FROM analytics WHERE event_type = 'search'
+               GROUP BY term ORDER BY cnt DESC LIMIT 10"""
+        ).fetchall()
+
+        # Top cart adds
+        cart_adds = conn.execute(
+            """SELECT json_extract(data, '$.name') as name, COUNT(*) as cnt
+               FROM analytics WHERE event_type = 'cart_add'
+               GROUP BY name ORDER BY cnt DESC LIMIT 10"""
+        ).fetchall()
+
+        # Top task runs
+        tasks = conn.execute(
+            """SELECT json_extract(data, '$.task_type') as task, COUNT(*) as cnt
+               FROM analytics WHERE event_type = 'task_run'
+               GROUP BY task ORDER BY cnt DESC LIMIT 10"""
+        ).fetchall()
+
+        # Top usual adds
+        usual_adds = conn.execute(
+            """SELECT json_extract(data, '$.name') as name, COUNT(*) as cnt
+               FROM analytics WHERE event_type = 'usual_add'
+               GROUP BY name ORDER BY cnt DESC LIMIT 10"""
+        ).fetchall()
+
+        conn.close()
+        return {
+            "totals": totals,
+            "top_searches": [{"term": r[0], "count": r[1]} for r in searches if r[0]],
+            "top_cart_adds": [{"name": r[0], "count": r[1]} for r in cart_adds if r[0]],
+            "top_tasks": [{"task": r[0], "count": r[1]} for r in tasks if r[0]],
+            "top_usual_adds": [{"name": r[0], "count": r[1]} for r in usual_adds if r[0]],
+        }
+    except Exception as e:
+        print(f"[analytics] get_analytics_summary failed: {e}")
+        return {}
