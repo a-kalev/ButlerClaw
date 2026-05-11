@@ -968,6 +968,25 @@
 	.onboarding-item img { width: 52px; height: 52px; object-fit: contain; border-radius: 8px; background: var(--cream); }
 	.onboarding-item-name { font-size: 0.75rem; font-weight: 500; color: var(--ink); line-height: 1.3; }
 	.onboarding-item-price { font-size: 0.72rem; color: var(--ink-light); }
+        .mylist-tag {
+            display: inline-block; border-radius: 20px; padding: 2px 9px;
+            font-size: 0.65rem; font-weight: 600; letter-spacing: 0.04em;
+            text-transform: uppercase; flex-shrink: 0;
+        }
+        .mylist-tag-weekly { background: var(--sale-bg); color: var(--sale); border: 1px solid var(--sale); }
+        .mylist-tag-sometimes { background: var(--cream); color: var(--ink-light); border: 1px solid var(--border); }
+        .mylist-budget-bar {
+            margin: 0 22px 12px; padding: 12px 16px;
+            background: var(--card-bg); border: 1px solid var(--border-light);
+            border-radius: 12px;
+        }
+        .mylist-budget-total {
+            font-size: 1.1rem; font-weight: 700; color: var(--ink);
+            font-family: 'Cormorant Garamond', serif;
+        }
+        .mylist-budget-savings {
+            font-size: 0.78rem; color: var(--sale); font-weight: 500; margin-top: 3px;
+        }
 	.onboarding-done-btn {
 	    width: calc(100% - 44px); margin: 8px 22px 16px;
 	    background: linear-gradient(135deg, var(--red), var(--red-dark));
@@ -1323,68 +1342,73 @@ function renderMyList(data) {
     cartBtn.className = 'mylist-run-btn';
     cartBtn.id = 'mylist-cart-btn';
     cartBtn.textContent = '🛒 Add Checked Items to Cart (0)';
-    cartBtn.onclick = () => addCheckedToCart(cartBtn, usuals, unusuals);
+    cartBtn.onclick = () => addCheckedToCart(cartBtn);
     content.appendChild(cartBtn);
 
-    // ── On Sale Now section (items from usuals currently on sale) ──
-    const onSaleItems = usuals.filter(p => p.sale_price && p.sale_price !== p.regular_price);
-    if (onSaleItems.length > 0) {
-        const saleSection = document.createElement('div');
-        saleSection.className = 'mylist-section';
-        saleSection.style.background = 'var(--sale-bg)';
-        saleSection.style.borderLeft = '3px solid var(--sale)';
-        saleSection.innerHTML = `<div class="mylist-section-title" style="color:var(--sale);">🔥 On Sale Now</div>`;
-        for (const p of onSaleItems) {
-            saleSection.appendChild(makeListItem(p, 'usual'));
-        }
-        content.appendChild(saleSection);
-    }
+    // ── Budget bar ──
+    const budgetBar = document.createElement('div');
+    budgetBar.className = 'mylist-budget-bar';
+    budgetBar.id = 'mylist-budget-bar';
+    budgetBar.innerHTML = `
+        <div class="mylist-budget-total" id="budget-total">$0.00 checked</div>
+        <div class="mylist-budget-savings" id="budget-savings" style="display:none;"></div>
+    `;
+    content.appendChild(budgetBar);
 
-    // ── Weekly usuals section ──
-    const usualsSection = document.createElement('div');
-    usualsSection.className = 'mylist-section';
-    const usualsHeader = document.createElement('div');
-    usualsHeader.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;';
-    usualsHeader.innerHTML = `
-    <div style="display:flex; flex-direction:column; align-items:flex-start;">
-        <div class="mylist-section-title" style="margin-bottom:4px;">Every Week</div>
-        <label style="display:flex; align-items:center; gap:6px; font-size:0.75rem; color:var(--ink-light); cursor:pointer;">
-            <input type="checkbox" id="check-all-usuals"> Check all
-        </label>
-    </div>`;
-    usualsSection.appendChild(usualsHeader);
-    for (const p of usuals) {
-        usualsSection.appendChild(makeListItem(p, 'usual'));
-    }
-    
-    content.appendChild(usualsSection);
-
-    // ── Time-to-time section ──
-    const unusualsSection = document.createElement('div');
-    unusualsSection.className = 'mylist-section';
-    const unusualsHeader = document.createElement('div');
-    unusualsHeader.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;';
-    //usualsHeader.innerHTML = `
-    //usualsHeader.innerHTML = `
-    unusualsHeader.innerHTML = `
-    <div style="display:flex; flex-direction:column; align-items:flex-start;">
-        <div class="mylist-section-title" style="margin-bottom:0;">Time to Time</div>
+    // ── Combined list: Weekly first, Sometimes after ──
+    const listSection = document.createElement('div');
+    listSection.className = 'mylist-section';
+    const listHeader = document.createElement('div');
+    listHeader.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;';
+    listHeader.innerHTML = `
+        <div class="mylist-section-title" style="margin-bottom:0;">My List</div>
         <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--ink-light);cursor:pointer;">
-            <input type="checkbox" id="check-all-unusuals"> Check all
-        </label>
-    </div>`;
-    unusualsSection.appendChild(unusualsHeader);
-    if (unusuals.length > 0) {
-        for (const p of unusuals) {
-            unusualsSection.appendChild(makeListItem(p, 'unusual'));
+            <input type="checkbox" id="check-all-items"> Check all
+        </label>`;
+    listSection.appendChild(listHeader);
+
+    // On Sale Now — highlighted items at top
+    const onSaleItems = [...usuals, ...unusuals].filter(p => p.sale_price && p.sale_price !== p.regular_price);
+    if (onSaleItems.length > 0) {
+        const saleLabel = document.createElement('div');
+        saleLabel.style.cssText = 'font-size:0.7rem;font-weight:600;color:var(--sale);letter-spacing:0.08em;text-transform:uppercase;padding:4px 0 6px;';
+        saleLabel.textContent = '🔥 On Sale';
+        listSection.appendChild(saleLabel);
+        for (const p of onSaleItems) {
+            const type = usuals.find(u => u.upc === p.upc) ? 'usual' : 'unusual';
+            listSection.appendChild(makeListItem(p, type));
         }
-    } else {
+        const divider = document.createElement('div');
+        divider.style.cssText = 'border-top:1px solid var(--border-light);margin:8px 0;';
+        listSection.appendChild(divider);
+    }
+
+    // Weekly items
+    const weeklyItems = usuals.filter(p => !onSaleItems.find(s => s.upc === p.upc));
+    for (const p of weeklyItems) {
+        listSection.appendChild(makeListItem(p, 'usual'));
+    }
+
+    // Sometimes items
+    const sometimesItems = unusuals.filter(p => !onSaleItems.find(s => s.upc === p.upc));
+    if (sometimesItems.length > 0) {
+        if (weeklyItems.length > 0) {
+            const divider2 = document.createElement('div');
+            divider2.style.cssText = 'border-top:1px solid var(--border-light);margin:8px 0;';
+            listSection.appendChild(divider2);
+        }
+        for (const p of sometimesItems) {
+            listSection.appendChild(makeListItem(p, 'unusual'));
+        }
+    }
+
+    if (usuals.length === 0 && unusuals.length === 0) {
         const empty = document.createElement('div');
         empty.style.cssText = 'font-size:0.82rem;color:var(--ink-light);font-style:italic;padding:4px 0 8px;';
-        empty.textContent = 'Nothing here yet — search below to add.';
-        unusualsSection.appendChild(empty);
+        empty.textContent = 'Search below to add items to your list.';
+        listSection.appendChild(empty);
     }
-    content.appendChild(unusualsSection);
+    content.appendChild(listSection);
 
     // ── Search to add ──
     const searchSection = document.createElement('div');
@@ -1400,15 +1424,13 @@ function renderMyList(data) {
         <div id="item-search-results" style="margin-top:10px;"></div>
     `;
     // Wire check-all after DOM is built
-    document.getElementById('check-all-usuals')?.addEventListener('change', function() {
-        document.querySelectorAll('.mylist-check-usual').forEach(cb => cb.checked = this.checked);
-        updateCartBtnCount();
-    });
-    document.getElementById('check-all-unusuals')?.addEventListener('change', function() {
-        document.querySelectorAll('.mylist-check-unusual').forEach(cb => cb.checked = this.checked);
-        updateCartBtnCount();
+    document.getElementById('check-all-items')?.addEventListener('change', function() {
+        document.querySelectorAll('.mylist-check').forEach(cb => cb.checked = this.checked);
+        updateBudget(usuals, unusuals);
     });
     content.appendChild(searchSection);
+    // Initial budget update
+    updateBudget(usuals, unusuals);
 }
 
 function makeListItem(p, type) {
@@ -1416,17 +1438,23 @@ function makeListItem(p, type) {
     item.className = 'mylist-item';
     item.dataset.upc = p.upc;
     item.dataset.type = type;
+    item.dataset.price = p.sale_price || p.regular_price || 0;
     const priceStr = p.sale_price
         ? `<span style="color:var(--sale);font-weight:600;">$${p.sale_price}</span> <span style="text-decoration:line-through;opacity:0.6;">$${p.regular_price}</span> <span style="color:var(--sale);font-size:0.65rem;font-weight:600;">SALE</span>`
         : p.regular_price ? `$${p.regular_price}` : '';
+    const tagClass = type === 'usual' ? 'mylist-tag-weekly' : 'mylist-tag-sometimes';
+    const tagLabel = type === 'usual' ? 'Weekly' : 'Sometimes';
     item.innerHTML = `
         <input type="checkbox" class="mylist-check mylist-check-${type}" data-upc="${p.upc}"
             style="width:18px;height:18px;accent-color:var(--sale);flex-shrink:0;cursor:pointer;"
-            onchange="updateCartBtnCount()">
+            onchange="updateBudget(_currentUsuals, _currentUnusuals)">
         ${p.image ? `<img src="${p.image}" alt="${p.name}">` : ''}
         <div class="mylist-item-info">
             <div class="mylist-item-name">${p.name}</div>
-            <div class="mylist-item-price">${priceStr}</div>
+            <div class="mylist-item-price" style="display:flex;align-items:center;gap:6px;">
+                ${priceStr}
+                <span class="mylist-tag ${tagClass}">${tagLabel}</span>
+            </div>
         </div>
         <button class="mylist-remove-btn" onclick="removeItem('${p.upc}','${type}')">Remove</button>
     `;
@@ -1521,7 +1549,7 @@ async function searchItems() {
                     <button class="mylist-remove-btn" style="border-color:var(--sale);color:var(--sale);white-space:nowrap;"
                         onclick="saveToList(this, ${JSON.stringify(p).replace(/"/g, '&quot;')}, 'usual')">+ Weekly</button>
                     <button class="mylist-remove-btn" style="white-space:nowrap;"
-                        onclick="saveToList(this, ${JSON.stringify(p).replace(/"/g, '&quot;')}, 'unusual')">+ Time to Time</button>
+                        onclick="saveToList(this, ${JSON.stringify(p).replace(/"/g, '&quot;')}, 'unusual')">+ Sometimes</button>
                 </div>
             `;
             resultsDiv.appendChild(row);
@@ -1540,7 +1568,7 @@ async function saveToList(btn, product, type) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: USER_ID, product })
     });
-    showCartToast(`✅ Added to ${type === 'usual' ? 'Weekly' : 'Time to Time'} list.`, 'success');
+    showCartToast(`✅ Added to ${type === 'usual' ? 'Weekly' : 'Sometimes'} list.`, 'success');
     setTimeout(() => loadMyList(), 800);
 }
 
@@ -1550,13 +1578,41 @@ function toggleCheckAll(type, checked) {
     updateCartBtnCount();
 }
 
-function updateCartBtnCount() {
-    const checked = document.querySelectorAll('.mylist-check:checked').length;
+// Module-level state so makeListItem onchange can access current lists
+let _currentUsuals = [];
+let _currentUnusuals = [];
+
+function updateBudget(usuals, unusuals) {
+    _currentUsuals = usuals || _currentUsuals;
+    _currentUnusuals = unusuals || _currentUnusuals;
+    const allItems = [..._currentUsuals, ..._currentUnusuals];
+    const checkedUpcs = new Set(
+        [...document.querySelectorAll('.mylist-check:checked')].map(cb => cb.dataset.upc)
+    );
+    const checkedItems = allItems.filter(p => checkedUpcs.has(p.upc));
+    const total = checkedItems.reduce((sum, p) => sum + parseFloat(p.sale_price || p.regular_price || 0), 0);
+    const savings = checkedItems.reduce((sum, p) => {
+        if (p.sale_price && p.regular_price) return sum + (parseFloat(p.regular_price) - parseFloat(p.sale_price));
+        return sum;
+    }, 0);
+
+    const totalEl = document.getElementById('budget-total');
+    const savingsEl = document.getElementById('budget-savings');
     const btn = document.getElementById('mylist-cart-btn');
-    if (btn) btn.textContent = `🛒 Add Checked Items to Cart (${checked})`;
+
+    if (totalEl) totalEl.textContent = `$${total.toFixed(2)} checked (${checkedItems.length} item${checkedItems.length !== 1 ? 's' : ''})`;
+    if (savingsEl) {
+        if (savings > 0) {
+            savingsEl.textContent = `🎉 Saving $${savings.toFixed(2)} on sale items`;
+            savingsEl.style.display = 'block';
+        } else {
+            savingsEl.style.display = 'none';
+        }
+    }
+    if (btn) btn.textContent = `🛒 Add Checked Items to Cart (${checkedItems.length})`;
 }
 
-async function addCheckedToCart(btn, usuals, unusuals) {
+async function addCheckedToCart(btn) {
     const checkedUpcs = new Set(
         [...document.querySelectorAll('.mylist-check:checked')].map(cb => cb.dataset.upc)
     );
@@ -1567,7 +1623,7 @@ async function addCheckedToCart(btn, usuals, unusuals) {
     btn.disabled = true;
     btn.textContent = '🛒 Adding to cart…';
 
-    const allItems = [...usuals, ...unusuals].filter(p => checkedUpcs.has(p.upc));
+    const allItems = [..._currentUsuals, ..._currentUnusuals].filter(p => checkedUpcs.has(p.upc));
 
     try {
         let added = 0, failed = 0;

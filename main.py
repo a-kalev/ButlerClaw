@@ -18,8 +18,135 @@ from urllib.parse import urlencode
 import requests
 import uuid as _uuid
 import os
+from datetime import datetime
+import pytz
 
 scheduler = BackgroundScheduler()
+
+
+DAY_MAP = {
+    "sunday": 6, "monday": 0, "tuesday": 1, "wednesday": 2,
+    "thursday": 3, "friday": 4, "saturday": 5
+}
+
+def run_weekly_autopilot():
+    """Runs every hour. For each user with autopilot enabled, checks if it's
+    their chosen day and hour in their local timezone. If so, sends push
+    reminder or auto-adds to cart."""
+    import sqlite3, json
+    from search import add_to_cart
+    print("[scheduler] Weekly autopilot sweep running")
+    try:
+        db_path = os.path.expanduser("~/butlerclaw2/butler.db")
+        conn = sqlite3.connect(db_path)
+        rows = conn.execute("SELECT user_id, profile FROM profiles").fetchall()
+        conn.close()
+
+        now_utc = datetime.utcnow().replace(tzinfo=pytz.utc)
+
+        for user_id, profile_json in rows:
+            try:
+                profile = json.loads(profile_json)
+                cfg = profile.get("claws", {}).get("weekly_autopilot", {})
+                if not cfg.get("enabled", False):
+                    continue
+
+                # Get user timezone — default UTC
+                tz_name = profile.get("timezone", "UTC")
+                try:
+                    tz = pytz.timezone(tz_name)
+                except Exception:
+                    tz = pytz.utc
+
+                now_local = now_utc.astimezone(tz)
+                target_day = DAY_MAP.get(cfg.get("day", "sunday"), 6)
+                target_hour, target_minute = map(int, cfg.get("time", "18:00").split(":"))
+
+                # Check day and hour match (minute window: 0-59 of that hour)
+                if now_local.weekday() != target_day:
+                    continue
+                if now_local.hour != target_hour:
+                    continue
+
+                # Avoid double-firing: check last_run_at for this user's autopilot
+                last_run = profile.get("autopilot_last_run")
+                if last_run:
+                    try:
+                        last_dt = datetime.fromisoformat(last_run).replace(tzinfo=pytz.utc)
+                        # If ran within last 2 hours, skip
+                        if (now_utc - last_dt).total_seconds() < 7200:
+                            continue
+                    except Exception:
+                        pass
+
+                mode = cfg.get("mode", "remind")
+                store_name = profile.get("store_name", "Kroger")
+                usuals = profile.get("usuals_products", [])
+                count = len(usuals)
+                subscription = profile.get("push_subscription")
+
+                if mode == "remind":
+                    # Push notification only
+                    if subscription:
+                        send_push(
+                            subscription=subscription,
+                            title="🛒 Time to shop your usuals!",
+                            body=f"Your {count} weekly item{'s are' if count != 1 else ' is'} ready to add to your {store_name} cart.",
+                            url="/?page=mylist"
+                        )
+                        print(f"[scheduler] Autopilot remind sent to {user_id}")
+
+                elif mode == "auto":
+                    # Auto-add to cart
+                    access_token = profile.get("kroger_access_token")
+                    if not access_token:
+                        refresh_token = profile.get("kroger_refresh_token")
+                        if refresh_token:
+                            new_access, new_refresh = refresh_kroger_token(refresh_token)
+                            if new_access:
+                                profile["kroger_access_token"] = new_access
+                                if new_refresh:
+                                    profile["kroger_refresh_token"] = new_refresh
+                                access_token = new_access
+                    if not access_token:
+                        print(f"[scheduler] Autopilot auto: no token for {user_id}")
+                        continue
+
+                    location_id = profile.get("location_id")
+                    all_items = usuals + profile.get("unusuals", [])
+                    added = 0
+                    seen = set()
+                    for item in all_items:
+                        upc = item.get("upc")
+                        if not upc or upc in seen:
+                            continue
+                        seen.add(upc)
+                        status_code, _ = add_to_cart(
+                            upc=upc, quantity=1,
+                            location_id=location_id,
+                            access_token=access_token
+                        )
+                        if status_code in (200, 201, 204):
+                            added += 1
+
+                    if subscription:
+                        send_push(
+                            subscription=subscription,
+                            title="🛒 Your usuals are in the cart!",
+                            body=f"Added {added} item{'s' if added != 1 else ''} to your {store_name} cart.",
+                            url="/?page=mylist"
+                        )
+                        print(f"[scheduler] Autopilot auto-added {added} items for {user_id}")
+
+                # Save last run time
+                profile["autopilot_last_run"] = now_utc.isoformat()
+                save_profile(user_id, profile)
+
+            except Exception as e:
+                print(f"[scheduler] Autopilot error for {user_id}: {e}")
+
+    except Exception as e:
+        print(f"[scheduler] Autopilot sweep failed: {e}")
 
 def run_daily_digest():
     """Runs at 08:00 UTC daily. Checks sales on usuals for all enabled users."""
@@ -51,6 +178,12 @@ async def lifespan(app_instance):
         run_daily_digest,
         CronTrigger(hour=8, minute=0),
         id="daily_digest",
+        replace_existing=True
+    )
+    scheduler.add_job(
+        run_weekly_autopilot,
+        CronTrigger(minute=1),  # Runs at minute 1 of every hour
+        id="weekly_autopilot",
         replace_existing=True
     )
     scheduler.start()
