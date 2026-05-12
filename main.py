@@ -793,6 +793,16 @@ async def analytics():
     """Returns anonymous aggregated usage stats."""
     return get_analytics_summary()
 
+@app.get("/get-profile")
+async def get_profile(user_id: str):
+    profile = load_profile(user_id)
+    return {
+        "location_id": profile.get("location_id"),
+        "store_name": profile.get("store_name"),
+        "zip_code": profile.get("zip_code"),
+        "claws": profile.get("claws", {})
+    }
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("APP_PORT", "8767"))

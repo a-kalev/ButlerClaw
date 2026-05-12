@@ -995,7 +995,74 @@
 	    cursor: pointer; box-shadow: 0 4px 16px rgba(184,50,50,0.25);
 	    transition: opacity 0.2s; letter-spacing: 0.02em;
 	}
-	.onboarding-done-btn:hover { opacity: 0.9; } 
+	.onboarding-done-btn:hover { opacity: 0.9; }
+        /* ── ONBOARDING OVERLAY ── */
+        .onboarding-overlay {
+            position: fixed; inset: 0; z-index: 1000;
+            background: var(--cream);
+            background-image: var(--texture);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 32px 28px;
+            transition: opacity 0.4s;
+        }
+        .onboarding-overlay.fade-out { opacity: 0; pointer-events: none; }
+        .onboarding-step { display: none; width: 100%; max-width: 420px; }
+        .onboarding-step.active { display: flex; flex-direction: column; align-items: center; }
+        .onboarding-icon {
+            width: 80px; height: 80px; border-radius: 50%; background: #000;
+            box-shadow: 0 4px 24px rgba(201,148,10,0.4), 0 0 0 3px rgba(201,148,10,0.25);
+            object-fit: cover; margin-bottom: 24px;
+        }
+        .onboarding-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.9rem; font-weight: 600; color: var(--ink);
+            text-align: center; margin-bottom: 10px; line-height: 1.2;
+        }
+        .onboarding-subtitle {
+            font-size: 0.9rem; color: var(--ink-light); text-align: center;
+            line-height: 1.6; margin-bottom: 32px; max-width: 320px;
+        }
+        .onboarding-primary-btn {
+            width: 100%; background: linear-gradient(135deg, var(--red), var(--red-dark));
+            color: white; border: none; border-radius: 28px; padding: 15px;
+            font-size: 1rem; font-family: 'DM Sans', sans-serif; font-weight: 600;
+            cursor: pointer; box-shadow: 0 4px 16px rgba(184,50,50,0.3);
+            transition: opacity 0.2s; letter-spacing: 0.02em; margin-bottom: 12px;
+        }
+        .onboarding-primary-btn:hover { opacity: 0.9; }
+        .onboarding-skip-btn {
+            background: none; border: none; color: var(--ink-light);
+            font-size: 0.85rem; font-family: 'DM Sans', sans-serif;
+            cursor: pointer; padding: 8px; text-decoration: underline;
+        }
+        .onboarding-zip-input {
+            width: 100%; border: 1.5px solid var(--border); border-radius: 28px;
+            padding: 14px 20px; font-size: 1rem; font-family: 'DM Sans', sans-serif;
+            background: var(--card-bg); color: var(--ink); outline: none;
+            margin-bottom: 16px; text-align: center; letter-spacing: 0.1em;
+        }
+        .onboarding-zip-input:focus { border-color: var(--gold); }
+        .onboarding-store-list { width: 100%; margin-bottom: 16px; }
+        .onboarding-store-option {
+            background: var(--card-bg); border: 2px solid var(--border-light);
+            border-radius: 12px; padding: 14px 16px; margin-bottom: 8px;
+            cursor: pointer; transition: border-color 0.2s, background 0.2s;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .onboarding-store-option:hover { border-color: var(--gold); }
+        .onboarding-store-option.selected { border-color: var(--sale); background: var(--sale-bg); }
+        .onboarding-store-name { font-weight: 500; font-size: 0.9rem; color: var(--ink); }
+        .onboarding-store-addr { font-size: 0.75rem; color: var(--ink-light); margin-top: 3px; }
+        .onboarding-progress {
+            display: flex; gap: 6px; margin-bottom: 28px;
+        }
+        .onboarding-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--border); transition: background 0.2s;
+        }
+        .onboarding-dot.active { background: var(--gold); }
+        .onboarding-dot.done { background: var(--sale); } 
     </style>
 </head>
 <body>
@@ -1075,6 +1142,54 @@
             <path d="M5 12h14M12 5l7 7-7 7"/>
         </svg>
     </a>
+</div>
+
+<!-- ── ONBOARDING OVERLAY ── -->
+<div id="onboarding-overlay" class="onboarding-overlay" style="display:none;">
+
+    <!-- Step 1: Welcome -->
+    <div id="onboarding-step-1" class="onboarding-step active">
+        <div class="onboarding-progress">
+            <div class="onboarding-dot active" id="dot-1"></div>
+            <div class="onboarding-dot" id="dot-2"></div>
+            <div class="onboarding-dot" id="dot-3"></div>
+        </div>
+        <img src="/icon2.png" class="onboarding-icon" alt="ButlerClaw">
+        <div class="onboarding-title">Meet your grocery butler</div>
+        <div class="onboarding-subtitle">I shop, plan, and find deals — so you don't have to. Set up takes 60 seconds.</div>
+        <button class="onboarding-primary-btn" onclick="onboardingNext(2)">Get Started →</button>
+        <button class="onboarding-skip-btn" onclick="dismissOnboarding(false)">Skip for now</button>
+    </div>
+
+    <!-- Step 2: Store -->
+    <div id="onboarding-step-2" class="onboarding-step">
+        <div class="onboarding-progress">
+            <div class="onboarding-dot done" id="dot-1b"></div>
+            <div class="onboarding-dot active" id="dot-2b"></div>
+            <div class="onboarding-dot" id="dot-3b"></div>
+        </div>
+        <div class="onboarding-title">Where do you shop?</div>
+        <div class="onboarding-subtitle">Enter your zip code and I'll find your nearby Kroger-family stores.</div>
+        <input type="tel" id="onboarding-zip" class="onboarding-zip-input" maxlength="5" placeholder="Enter zip code"
+            onkeydown="if(event.key==='Enter') onboardingFindStores()"/>
+        <button class="onboarding-primary-btn" onclick="onboardingFindStores()" id="onboarding-find-btn">Find My Store →</button>
+        <div id="onboarding-store-list" class="onboarding-store-list" style="display:none;"></div>
+        <button class="onboarding-skip-btn" onclick="dismissOnboarding(false)">Skip for now</button>
+    </div>
+
+    <!-- Step 3: Build List -->
+    <div id="onboarding-step-3" class="onboarding-step">
+        <div class="onboarding-progress">
+            <div class="onboarding-dot done"></div>
+            <div class="onboarding-dot done"></div>
+            <div class="onboarding-dot active"></div>
+        </div>
+        <div class="onboarding-title">Build your weekly list</div>
+        <div class="onboarding-subtitle">Tap items you buy every week. I'll remember them and add them to your cart automatically.</div>
+        <button class="onboarding-primary-btn" onclick="onboardingBuildList()">Build My List →</button>
+        <button class="onboarding-skip-btn" onclick="dismissOnboarding(false)">Maybe later</button>
+    </div>
+
 </div>
 
 <!-- ── PAGE: MY LIST ── -->
@@ -2339,6 +2454,140 @@ async function submitContact() {
         showCartToast('❌ Something went wrong. Please try again.', 'error');
     }
 }
+
+// ── Onboarding ────────────────────────────────────────────────────────────────
+
+function checkAndShowOnboarding() {
+    if (!localStorage.getItem('onboarding_done')) {
+        document.getElementById('onboarding-overlay').style.display = 'flex';
+    }
+}
+
+function onboardingNext(step) {
+    document.querySelectorAll('.onboarding-step').forEach(s => s.classList.remove('active'));
+    document.getElementById('onboarding-step-' + step).classList.add('active');
+}
+
+async function onboardingFindStores() {
+    const zip = document.getElementById('onboarding-zip').value.trim();
+    if (zip.length < 5) {
+        document.getElementById('onboarding-zip').style.borderColor = 'var(--red)';
+        return;
+    }
+    document.getElementById('onboarding-zip').style.borderColor = 'var(--border)';
+    const btn = document.getElementById('onboarding-find-btn');
+    btn.textContent = 'Searching…';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: 'find stores', zip_code: zip, user_id: USER_ID, history: [] })
+        });
+        const data = await res.json();
+        btn.textContent = 'Find My Store →';
+        btn.disabled = false;
+
+        if (!data.stores || data.stores.length === 0) {
+            btn.textContent = 'No stores found. Try another zip.';
+            return;
+        }
+
+        // Sync zip input on main shop page
+        const zipInput = document.getElementById('zip');
+        if (zipInput) zipInput.value = zip;
+
+        const list = document.getElementById('onboarding-store-list');
+        list.innerHTML = '';
+        list.style.display = 'block';
+        btn.style.display = 'none';
+
+        for (const store of data.stores) {
+            const opt = document.createElement('div');
+            opt.className = 'onboarding-store-option';
+            opt.innerHTML = `
+                <div>
+                    <div class="onboarding-store-name">${store.name}</div>
+                    <div class="onboarding-store-addr">${store.address}, ${store.city}, ${store.state}</div>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sale)" stroke-width="2.5" style="display:none;" class="check-icon">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            `;
+            opt.addEventListener('click', () => onboardingSelectStore(store, zip));
+            list.appendChild(opt);
+        }
+    } catch(e) {
+        btn.textContent = 'Find My Store →';
+        btn.disabled = false;
+        console.log('[onboarding] store search failed:', e);
+    }
+}
+
+let _onboardingSelectedStore = null;
+let _onboardingZip = null;
+
+async function onboardingSelectStore(store, zip) {
+    // Visual selection
+    document.querySelectorAll('.onboarding-store-option').forEach(o => {
+        o.classList.remove('selected');
+        o.querySelector('.check-icon').style.display = 'none';
+    });
+    event.currentTarget.classList.add('selected');
+    event.currentTarget.querySelector('.check-icon').style.display = 'block';
+
+    _onboardingSelectedStore = store;
+    _onboardingZip = zip;
+
+    // Save store to profile
+    try {
+        await fetch('/select-store', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: USER_ID,
+                zip_code: zip,
+                message: 'onboarding store selection',
+                history: [],
+                location_id: store.locationId,
+                store_name: store.name,
+                store_city: store.city,
+                store_state: store.state
+            })
+        });
+        localStorage.setItem('onboarding_done', '1');
+        // Brief delay then advance to step 3
+        setTimeout(() => onboardingNext(3), 600);
+    } catch(e) {
+        console.log('[onboarding] select store failed:', e);
+    }
+}
+
+async function onboardingBuildList() {
+    dismissOnboarding(true);
+    // Navigate to My List and trigger onboarding picker
+    setPage('mylist');
+}
+
+function dismissOnboarding(builtList) {
+    localStorage.setItem('onboarding_done', '1');
+    const overlay = document.getElementById('onboarding-overlay');
+    overlay.classList.add('fade-out');
+    setTimeout(() => { overlay.style.display = 'none'; }, 400);
+    // Land on My List if they built a list, Shop otherwise
+    if (builtList) {
+        setPage('mylist');
+    } else {
+        setPage('shop');
+    }
+}
+
+// Check onboarding on load
+window.addEventListener('DOMContentLoaded', () => {
+    checkAndShowOnboarding();
+});
+
 // ── Main send ──
 async function send() {
     const input = document.getElementById('msg');
