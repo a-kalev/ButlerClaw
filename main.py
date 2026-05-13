@@ -291,6 +291,10 @@ async def select_store(req: StoreSelectRequest):
     profile["zip_code"] = req.zip_code
     save_profile(req.user_id, profile)
 
+    # If called from onboarding, skip the search
+    if req.message == 'onboarding store selection':
+        return {"status": "ok", "store_name": req.store_name}
+
     store = {
         "locationId": req.location_id,
         "name": req.store_name,
@@ -298,7 +302,6 @@ async def select_store(req: StoreSelectRequest):
         "state": req.store_state
     }
 
-    # Immediately run the original search
     return await run_search(
         req.message, req.zip_code, req.user_id,
         req.history, req.location_id, store
@@ -313,8 +316,16 @@ async def find_stores(zip_code: str):
 @app.get("/get-profile")
 async def get_profile(user_id: str = "anonymous"):
     profile = load_profile(user_id)
-    return {"zip_code": profile.get("zip_code")}
-
+    return {
+        "zip_code": profile.get("zip_code"),
+        "location_id": profile.get("location_id"),
+        "store_name": profile.get("store_name"),
+        "store_city": profile.get("store_city"),
+        "store_state": profile.get("store_state"),
+        "claws": profile.get("claws", {}),
+        "usuals_count": len(profile.get("usuals_products", [])),
+        "unusuals_count": len(profile.get("unusuals", []))
+    }
 @app.get("/")
 async def root():
     return FileResponse("ui.html")

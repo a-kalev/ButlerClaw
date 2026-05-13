@@ -821,30 +821,6 @@
         .nav-btn.active svg { opacity: 1; stroke: var(--gold); }
         .nav-btn.active img { opacity: 1; }
 
-        /* ── COMING SOON BUBBLE ── */
-        .coming-soon-wrap {
-            position: relative;
-            display: inline-block;
-        }
-        .coming-soon-bubble {
-            display: none;
-            position: absolute;
-            bottom: 28px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 16px;
-            padding: 16px 18px;
-            width: 280px;
-            font-size: 0.8rem;
-            color: var(--ink-light);
-            line-height: 1.7;
-            box-shadow: 0 8px 32px rgba(28,23,18,0.12);
-            z-index: 300;
-            animation: fadeUp 0.2s ease both;
-        }
-        .coming-soon-bubble.visible { display: block; }
         /* ── MEAL PLAN ── */
         .meal-section {
             border-bottom: 1px solid var(--border-light);
@@ -1104,7 +1080,7 @@
     <div id="home-content">
         <div class="welcome">
             <img src="/icon2.png" alt="ButlerClaw" class="butler-logo" style="width:100px;height:100px;border-radius:50%;background:#000;object-fit:cover;box-shadow:0 4px 24px rgba(201,148,10,0.4);"/>
-            <h2>Good day. ButlerClaw at your service.</h2>
+            <h2>Good day.</h2>
             <p>I can take care of your shopping. What's on your mind?</p>
             <p id="home-store-line" style="font-size:0.88rem;color:var(--ink-light);">Loading your store…</p>
         </div>
@@ -1985,20 +1961,7 @@ async function renderOnboarding(container, isAddMore = false) {
     }
 }
 
-function toggleComingSoon(e) {
-    e.preventDefault();
-    const bubble = document.getElementById('coming-soon-bubble');
-    bubble.classList.toggle('visible');
-    // Close on outside click
-    if (bubble.classList.contains('visible')) {
-        setTimeout(() => {
-            document.addEventListener('click', function handler() {
-                bubble.classList.remove('visible');
-                document.removeEventListener('click', handler);
-            });
-        }, 10);
-    }
-}
+
 
 
 async function runMealPlanner() {
@@ -2773,18 +2736,7 @@ async function send() {
 
 <!-- ── FOOTER ── -->
 <div class="app-footer">
-    <span style="color:var(--ink-light); margin-right:12px;">AI-powered shopping · Free forever</span>
-    <span class="coming-soon-wrap">
-        <a href="#" onclick="toggleComingSoon(event);">Coming Soon</a>
-        <div class="coming-soon-bubble" id="coming-soon-bubble">
-            <div style="font-weight:600; margin-bottom:8px; color:var(--ink);">On the roadmap 🗺️</div>
-            <div style="margin-bottom:6px;">🔍 <strong>Sale Hunter</strong> — monitors your usuals for deals daily</div>
-            <div style="margin-bottom:6px;">📅 <strong>Weekly Autopilot</strong> — shops for you every week automatically</div>
-            <div style="margin-bottom:6px;">📦 <strong>Restock Monitor</strong> — never run out of what you use regularly</div>
-            <div>🏪 <strong>More Stores</strong> — Instacart integration (85,000+ stores)</div>
-        </div>
-    </span>
-    <span style="margin: 0 10px; color:var(--border);">·</span>
+    <span style="color:var(--ink-light); margin-right:0px;">AI-powered shopping · Free forever · </span>
     <a href="#" onclick="openContact(); return false;">Contact us</a>
 </div>
 
