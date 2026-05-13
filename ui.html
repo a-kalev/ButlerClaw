@@ -1062,13 +1062,23 @@
             background: var(--border); transition: background 0.2s;
         }
         .onboarding-dot.active { background: var(--gold); }
-        .onboarding-dot.done { background: var(--sale); } 
+        .onboarding-dot.done { background: var(--sale); }
+        /* ── HOME PAGE ── */
+        .home-action-btn {
+            display: flex; align-items: center; gap: 14px;
+            background: var(--card-bg); border: 1px solid var(--border-light);
+            border-radius: 14px; padding: 16px; cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            font-family: 'DM Sans', sans-serif; text-align: left; width: 100%;
+        }
+        .home-action-btn:hover { border-color: var(--gold); background: var(--cream); }
+        .home-action-btn span:first-child { font-size: 1.6rem; flex-shrink: 0; } 
     </style>
 </head>
 <body>
 
 <!-- ── HEADER ── -->
-<header>
+<header onclick="setPage('home')" style="cursor:pointer;">
     <div class="logo-wrap">
         <img src="/icon2.png" alt="ButlerClaw" class="butler-logo"/>
         <div class="brand-text">
@@ -1088,39 +1098,80 @@
     <span style="color:#b0a898; font-size:0.78rem;">Harris Teeter · Kroger · Ralphs · King Soopers & more</span>
 </div>
 
-<!-- ── PAGE: SHOP ── -->
-<div id="page-shop" class="page active-page">
-    <div id="chat">
+
+<!-- ── PAGE: HOME ── -->
+<div id="page-home" class="page active-page">
+    <div id="home-content">
         <div class="welcome">
-            <img src="/icon2.png" alt="ButlerClaw" class="butler-logo" style="width:120px; height:120px; border-radius:50%; background:#000; object-fit:cover;"/>
-            <h2>Good day. How may I assist?</h2>
-            <p>What's on your mind? I'll find the best options at your store, compare prices, spot the deals, and add everything to your cart.</p>
-            <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:20px;">
-                <div class="suggestion-chip" onclick="document.getElementById('msg').value='I want to make lasagna for 4 people'; document.getElementById('msg').focus();">🍝 Lasagna for 4</div>
-                <div class="suggestion-chip" onclick="document.getElementById('msg').value='Weekly groceries for a family of 3'; document.getElementById('msg').focus();">🛒 Weekly groceries</div>
-                <div class="suggestion-chip" onclick="document.getElementById('msg').value='Healthy breakfast ideas'; document.getElementById('msg').focus();">🥗 Healthy breakfast</div>
-            </div>
+            <img src="/icon2.png" alt="ButlerClaw" class="butler-logo" style="width:100px;height:100px;border-radius:50%;background:#000;object-fit:cover;box-shadow:0 4px 24px rgba(201,148,10,0.4);"/>
+            <h2>Good day. ButlerClaw at your service.</h2>
+            <p>I can take care of your shopping. What's on your mind?</p>
+            <p id="home-store-line" style="font-size:0.88rem;color:var(--ink-light);">Loading your store…</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;padding:0 22px 16px;">
+            <button class="home-action-btn" onclick="setPage('mylist')">
+                <span>📋</span>
+                <div>
+                    <div style="font-weight:600;font-size:0.95rem;">My List</div>
+                    <div id="home-list-count" style="font-size:0.78rem;color:var(--ink-light);">Your weekly & sometimes items</div>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:auto;flex-shrink:0;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+            <button class="home-action-btn" onclick="setPage('discover')">
+                <span>✨</span>
+                <div>
+                    <div style="font-weight:600;font-size:0.95rem;">Discover</div>
+                    <div style="font-size:0.78rem;color:var(--ink-light);">Ask the butler, find deals</div>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:auto;flex-shrink:0;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+            <button class="home-action-btn" onclick="setPage('meals')">
+                <span>🍽️</span>
+                <div>
+                    <div style="font-weight:600;font-size:0.95rem;">Meal Planner</div>
+                    <div style="font-size:0.78rem;color:var(--ink-light);">Plan dinners, add to cart</div>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:auto;flex-shrink:0;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+        </div>
+        <div id="home-sale-alert" style="display:none;margin:0 22px 16px;padding:14px 16px;background:var(--sale-bg);border:1px solid rgba(26,110,62,0.2);border-radius:12px;">
+            <div style="font-size:0.78rem;font-weight:600;color:var(--sale);margin-bottom:4px;">🔥 Sales on your list</div>
+            <div id="home-sale-text" style="font-size:0.82rem;color:var(--ink);"></div>
         </div>
     </div>
 </div>
 
-<!-- ── PAGE: AUTO CART ── -->
-<div id="page-autocart" class="page" style="display:none;">
-    <div class="feature-hero">
-        <img src="/icon2.png" alt="ButlerClaw" style="width:120px;height:120px;border-radius:50%;background:#000;object-fit:cover;box-shadow:0 4px 24px rgba(201,148,10,0.3);"/>
-        <h2>Auto Cart</h2>
-        <p>Tell the butler what to add — it finds the best products at your store and adds them to your cart instantly.</p>
-        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:20px;">
-            <div class="suggestion-chip" onclick="document.getElementById('msg').value='Add whole milk and eggs'; document.getElementById('msg').focus();">🥛 Milk & eggs</div>
-            <div class="suggestion-chip" onclick="document.getElementById('msg').value='Add sourdough bread and butter'; document.getElementById('msg').focus();">🍞 Bread & butter</div>
-            <div class="suggestion-chip" onclick="document.getElementById('msg').value='Add chicken breast, olive oil and garlic'; document.getElementById('msg').focus();">🍗 Chicken dinner</div>
+
+<!-- ── PAGE: DISCOVER ── -->
+<div id="page-discover" class="page" style="display:none;">
+    <!-- Mode toggle -->
+    <div style="display:flex;gap:8px;padding:14px 22px 0;justify-content:center;">
+        <button id="mode-chat-btn" onclick="setDiscoverMode('chat')"
+            style="flex:1;padding:9px;border-radius:20px;border:1.5px solid var(--sale);background:var(--sale);color:white;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;">
+            💬 Ask Butler
+        </button>
+        <button id="mode-cart-btn" onclick="setDiscoverMode('cart')"
+            style="flex:1;padding:9px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--ink-light);font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:500;cursor:pointer;">
+            🤖 Auto Cart
+        </button>
+    </div>
+    <div id="chat">
+        <div class="welcome">
+            <img src="/icon2.png" alt="ButlerClaw" class="butler-logo" style="width:120px;height:120px;border-radius:50%;background:#000;object-fit:cover;"/>
+            <h2>Good day. How may I assist?</h2>
+            <p>What's on your mind? I'll find the best options at your store, compare prices, spot the deals, and add everything to your cart.</p>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;">
+                <div class="suggestion-chip" onclick="document.getElementById('msg').value='I want to make lasagna for 4 people';document.getElementById('msg').focus();">🍝 Lasagna for 4</div>
+                <div class="suggestion-chip" onclick="document.getElementById('msg').value='Weekly groceries for a family of 3';document.getElementById('msg').focus();">🛒 Weekly groceries</div>
+                <div class="suggestion-chip" onclick="document.getElementById('msg').value='Healthy breakfast ideas';document.getElementById('msg').focus();">🥗 Healthy breakfast</div>
+            </div>
         </div>
     </div>
     <div id="autocart-results"></div>
 </div>
 
 <!-- ── PAGE: MEAL PLANNER ── -->
-<div id="page-mealplan" class="page" style="display:none;">
+<div id="page-meals" class="page" style="display:none;">
     <div class="feature-hero">
         <img src="/icon2.png" alt="ButlerClaw" style="width:120px;height:120px;border-radius:50%;background:#000;object-fit:cover;box-shadow:0 4px 24px rgba(201,148,10,0.3);"/>
         <h2>Meal Planner</h2>
@@ -1201,29 +1252,28 @@
     <!-- Input bar (hidden on meal planner) -->
     <div class="input-bar-wrap" id="input-bar-wrap">
         <div class="input-bar">
-            <input type="text" id="msg" placeholder="e.g. I want to make lasagna for 6 people…" onkeydown="if(event.key==='Enter') currentPage === 'autocart' ? sendClaw() : send()"/>
+            <input type="text" id="msg" placeholder="e.g. I want to make lasagna for 6 people…" onkeydown="if(event.key==='Enter') currentPage === 'cart' ? sendClaw() : send()"/>
             <button id="send-btn" onclick="send()">Ask Butler</button>
-            <button id="claw-btn" onclick="sendClaw()" style="display:none; background:linear-gradient(135deg,#c9940a,#a07608); color:var(--ink); border:none; border-radius:28px; padding:12px 14px; font-size:0.85rem; font-family:'DM Sans',sans-serif; font-weight:600; cursor:pointer; white-space:nowrap; box-shadow:0 4px 16px rgba(201,148,10,0.3); letter-spacing:0.02em;"><img src="/icon2.png" style="width:24px;height:24px;border-radius:50%;background:#000;object-fit:cover;vertical-align:middle;margin-right:4px;"> Add to Cart</button>
+            <button id="claw-btn" onclick="sendClaw()" style="display:none; background:linear-gradient(135deg,#c9940a,#a07608); color:var(--ink); border:none; border-radius:28px; padding:12px 14px; font-size:0.85rem; font-family:'DM Sans',sans-serif; font-weight:600; cursor:pointer; white-space:nowrap; box-shadow:0 4px 16px rgba(201,148,10,0.3); letter-spacing:0.02em;">Add to Cart</button>
         </div>
     </div>
     <!-- Bottom nav -->
     <nav class="bottom-nav">
-        <button class="nav-btn active" id="nav-shop" onclick="setPage('shop')">
-            <span style="font-size:1.4rem;">🛒</span>
-            <span>Shop</span>
+        <button class="nav-btn active" id="nav-home" onclick="setPage('home')">
+            <span style="font-size:1.4rem;">🏠</span>
+            <span>Home</span>
         </button>
-	<button class="nav-btn" id="nav-mylist" onclick="setPage('mylist')">
+        <button class="nav-btn" id="nav-mylist" onclick="setPage('mylist')">
             <span style="font-size:1.4rem;">📋</span>
             <span>My List</span>
         </button>
-        <button class="nav-btn" id="nav-autocart" onclick="setPage('autocart')">
-            <img src="/icon2.png" style="width:26px;height:26px;border-radius:50%;background:#000;object-fit:cover;"/>
-            <span>Auto Cart</span>
+        <button class="nav-btn" id="nav-discover" onclick="setPage('discover')">
+            <span style="font-size:1.4rem;">✨</span>
+            <span>Discover</span>
         </button>
-        <button class="nav-btn" id="nav-mealplan" onclick="setPage('mealplan')">
+        <button class="nav-btn" id="nav-meals" onclick="setPage('meals')">
             <span style="font-size:1.4rem;">🍽️</span>
             <span>Meals</span>
-        </button>
         </button>
     </nav>
 </div>
@@ -1284,8 +1334,6 @@ async function setupPush() {
 }
 window.addEventListener('load', () => setupPush());
 
-// ── Mode toggle ──
-let currentMode = 'chat';
 
 
 async function loadClawJobs() {
@@ -1321,46 +1369,119 @@ async function loadClawJobs() {
 
 
 // ── Page navigation ──
-let currentPage = 'shop';
+let currentPage = 'home';
+let currentMode = 'chat';
 
 function setPage(page) {
     currentPage = page;
 
     // Hide all pages
-    document.getElementById('page-shop').style.display = 'none';
-    document.getElementById('page-autocart').style.display = 'none';
-    document.getElementById('page-mealplan').style.display = 'none';
-    document.getElementById('page-mylist').style.display = 'none';
+    ['home','discover','mylist','meals'].forEach(p => {
+        const el = document.getElementById('page-' + p);
+        if (el) el.style.display = 'none';
+    });
 
     // Deactivate all nav buttons
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
     // Show selected page + activate nav button
     document.getElementById('page-' + page).style.display = 'flex';
-    document.getElementById('nav-' + page).classList.add('active');
+    const navBtn = document.getElementById('nav-' + page);
+    if (navBtn) navBtn.classList.add('active');
 
     const inputWrap = document.getElementById('input-bar-wrap');
     const sendBtn = document.getElementById('send-btn');
     const clawBtn = document.getElementById('claw-btn');
     const msgInput = document.getElementById('msg');
 
-    if (page === 'shop') {
+    if (page === 'discover') {
         inputWrap.style.display = '';
-        sendBtn.style.display = '';
-        clawBtn.style.display = 'none';
-        msgInput.placeholder = 'e.g. I want to make lasagna for 6 people…';
-    } else if (page === 'autocart') {
-        inputWrap.style.display = '';
-        sendBtn.style.display = 'none';
-        clawBtn.style.display = '';
-        msgInput.placeholder = 'e.g. Add whole milk, eggs and sourdough…';
-        loadClawJobs();
-    } else if (page === 'mealplan') {
+        setDiscoverMode(currentMode);
+    } else if (page === 'meals') {
         inputWrap.style.display = 'none';
     } else if (page === 'mylist') {
         inputWrap.style.display = 'none';
         loadMyList();
+    } else if (page === 'home') {
+        inputWrap.style.display = 'none';
+        loadHome();
     }
+}
+
+function setDiscoverMode(mode) {
+    currentMode = mode;
+    const sendBtn = document.getElementById('send-btn');
+    const clawBtn = document.getElementById('claw-btn');
+    const msgInput = document.getElementById('msg');
+    const chatBtn = document.getElementById('mode-chat-btn');
+    const cartBtn = document.getElementById('mode-cart-btn');
+
+    if (mode === 'chat') {
+        sendBtn.style.display = '';
+        clawBtn.style.display = 'none';
+        msgInput.placeholder = 'e.g. I want to make lasagna for 6 people…';
+        if (chatBtn) { chatBtn.style.background = 'var(--sale)'; chatBtn.style.color = 'white'; chatBtn.style.borderColor = 'var(--sale)'; }
+        if (cartBtn) { cartBtn.style.background = 'transparent'; cartBtn.style.color = 'var(--ink-light)'; cartBtn.style.borderColor = 'var(--border)'; }
+    } else {
+        sendBtn.style.display = 'none';
+        clawBtn.style.display = '';
+        msgInput.placeholder = 'e.g. Add whole milk, eggs and sourdough…';
+        if (cartBtn) { cartBtn.style.background = 'var(--gold)'; cartBtn.style.color = 'var(--ink)'; cartBtn.style.borderColor = 'var(--gold)'; }
+        if (chatBtn) { chatBtn.style.background = 'transparent'; chatBtn.style.color = 'var(--ink-light)'; chatBtn.style.borderColor = 'var(--border)'; }
+        loadClawJobs();
+    }
+}
+
+async function loadHome() {
+    try {
+        const res = await fetch('/usuals?user_id=' + USER_ID);
+        const data = await res.json();
+        const usuals = data.usuals || [];
+        const unusuals = data.unusuals || [];
+        const storeName = data.store_name || 'No store selected';
+
+        const storeLine = document.getElementById('home-store-line');
+        if (storeLine) {
+            if (data.store_name) {
+                storeLine.innerHTML = `📍 Your store: <strong>${data.store_name}</strong> &nbsp;<button onclick="showChangeStore()" style="background:none;border:none;color:var(--gold);font-size:0.78rem;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:underline;padding:0;">Change</button>`;
+            } else {
+                storeLine.innerHTML = `<span style="color:var(--red);">No store selected</span> &nbsp;<button onclick="showChangeStore()" style="background:none;border:none;color:var(--gold);font-size:0.78rem;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:underline;padding:0;">Choose a store →</button>`;
+            }
+        }
+
+        const listCount = document.getElementById('home-list-count');
+        const total = usuals.length + unusuals.length;
+        if (listCount) listCount.textContent = total > 0
+            ? `${usuals.length} weekly · ${unusuals.length} sometimes`
+            : 'No items yet — tap to build your list';
+
+        // Sale alert
+        const onSale = usuals.filter(p => p.sale_price && p.sale_price !== p.regular_price);
+        const saleAlert = document.getElementById('home-sale-alert');
+        const saleText = document.getElementById('home-sale-text');
+        if (onSale.length > 0 && saleAlert && saleText) {
+            saleText.textContent = `${onSale.length} item${onSale.length > 1 ? 's' : ''} on your list ${onSale.length > 1 ? 'are' : 'is'} on sale — tap My List to see.`;
+            saleAlert.style.display = 'block';
+        }
+    } catch(e) {
+        console.log('[home] Could not load:', e);
+    }
+}
+
+function showChangeStore() {
+    // Reset and show onboarding step 2 (store picker) as a standalone overlay
+    localStorage.removeItem('onboarding_done');
+    document.querySelectorAll('.onboarding-step').forEach(s => s.classList.remove('active'));
+    document.getElementById('onboarding-step-2').classList.add('active');
+    // Reset store list
+    const list = document.getElementById('onboarding-store-list');
+    if (list) { list.innerHTML = ''; list.style.display = 'none'; }
+    const findBtn = document.getElementById('onboarding-find-btn');
+    if (findBtn) { findBtn.style.display = ''; findBtn.textContent = 'Find My Store →'; findBtn.disabled = false; }
+    const zipInput = document.getElementById('onboarding-zip');
+    if (zipInput) zipInput.value = document.getElementById('zip')?.value || '';
+    document.getElementById('onboarding-overlay').style.display = 'flex';
+    document.getElementById('onboarding-overlay').classList.remove('fade-out');
 }
 
 // ── My List ──────────────────────────────────────────────────────────────────
@@ -2043,7 +2164,7 @@ async function sendClaw() {
         const result = data.result;
 
         clawBtn.disabled = false;
-        clawBtn.innerHTML = '<img src="/icon2.png" style="width:16px;height:16px;border-radius:50%;background:#000;object-fit:cover;vertical-align:middle;margin-right:6px;"> Add to Cart';
+        clawBtn.innerHTML = 'Add to Cart';
 
         if (result.status === 'needs_auth') {
             showCartToast('🔐 Please sign in to Kroger first.', 'error');
@@ -2066,7 +2187,7 @@ async function sendClaw() {
 
     } catch(e) {
         clawBtn.disabled = false;
-        clawBtn.textContent = '🦞 Add to Cart';
+        clawBtn.textContent = 'Add to Cart';
         console.error('[sendClaw error]', e);
         showCartToast('❌ Something went wrong. Please try again.', 'error');
     }
@@ -2187,7 +2308,7 @@ if (urlParams.get('cart_success')) {
     window.history.replaceState({}, '', '/');
 }
 if (urlParams.get('cart_error')) {
-    showCartToast('❌ Could not add to cart. Please try again.', 'error');
+    showCartToast('❌ Could notadd to cart. Please try again.', 'error');
     window.history.replaceState({}, '', '/');
 }
 
@@ -2480,11 +2601,7 @@ async function onboardingFindStores() {
     btn.disabled = true;
 
     try {
-        const res = await fetch('/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: 'find stores', zip_code: zip, user_id: USER_ID, history: [] })
-        });
+        const res = await fetch('/find-stores?zip_code=' + encodeURIComponent(zip));
         const data = await res.json();
         btn.textContent = 'Find My Store →';
         btn.disabled = false;
@@ -2565,8 +2682,10 @@ async function onboardingSelectStore(store, zip) {
 }
 
 async function onboardingBuildList() {
-    dismissOnboarding(true);
-    // Navigate to My List and trigger onboarding picker
+    localStorage.setItem('onboarding_done', '1');
+    const overlay = document.getElementById('onboarding-overlay');
+    overlay.classList.add('fade-out');
+    setTimeout(() => { overlay.style.display = 'none'; }, 400);
     setPage('mylist');
 }
 
@@ -2579,13 +2698,15 @@ function dismissOnboarding(builtList) {
     if (builtList) {
         setPage('mylist');
     } else {
-        setPage('shop');
+        setPage('home');
+        loadHome();
     }
 }
 
 // Check onboarding on load
 window.addEventListener('DOMContentLoaded', () => {
     checkAndShowOnboarding();
+    setPage('home');
 });
 
 // ── Main send ──

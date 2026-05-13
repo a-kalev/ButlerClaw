@@ -304,6 +304,12 @@ async def select_store(req: StoreSelectRequest):
         req.history, req.location_id, store
     )
 
+
+@app.get("/find-stores")
+async def find_stores(zip_code: str):
+    """Always returns nearby stores for a zip — used by store picker and change-store flow."""
+    stores = get_nearby_stores(zip_code)
+    return {"stores": stores, "zip_code": zip_code}
 @app.get("/get-profile")
 async def get_profile(user_id: str = "anonymous"):
     profile = load_profile(user_id)
@@ -620,7 +626,8 @@ async def get_usuals(user_id: str):
         "usuals": products,
         "unusuals": unusuals,
         "autopilot": autopilot,
-        "sale_hunter": sale_hunter
+        "sale_hunter": sale_hunter,
+        "store_name": profile.get("store_name")
     }
 
 @app.post("/usuals/add")
