@@ -734,9 +734,19 @@ async def run_usuals_now(user_id: str):
                         profile["kroger_refresh_token"] = new_refresh
                     save_profile(user_id, profile)
                     access_token = new_access
+                    # Retry with new token
                     status_code, _ = add_to_cart(upc=upc, quantity=1,
                                                   location_id=location_id,
                                                   access_token=access_token)
+                else:
+                    # Refresh failed — clear stale token, stop run
+                    profile.pop("kroger_access_token", None)
+                    save_profile(user_id, profile)
+                    return {"status": "need_auth"}
+            else:
+                profile.pop("kroger_access_token", None)
+                save_profile(user_id, profile)
+                return {"status": "need_auth"}
         if status_code in (200, 201, 204):
             added += 1
         else:
@@ -810,8 +820,11 @@ async def toggle_sale_hunter(req: SaleHunterToggleRequest):
 # ── Analytics ─────────────────────────────────────────────────────────────────
 
 @app.get("/analytics")
-async def analytics():
-    """Returns anonymous aggregated usage stats."""
+async def analytics(key: str = ""):
+    """Returns anonymous aggregated usage stats. Protected by ANALYTICS_KEY in .env."""
+    expected = os.environ.get("ANALYTICS_KEY", "")
+    if not expected or key != expected:
+        return {"error": "unauthorized"}
     return get_analytics_summary()
 
 @app.get("/get-profile")

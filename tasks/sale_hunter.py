@@ -39,6 +39,14 @@ class SaleHunterTask(ClawTask):
         location_id = profile.get("location_id")
         store_name = profile.get("store_name", "your store")
 
+        if not location_id:
+            return ClawResult(
+                job_id=job_id,
+                task_type=self.task_type,
+                status="skipped",
+                summary="No store selected. Please select your store first."
+            )
+
         on_sale = []
 
         for item in usuals:

@@ -1671,10 +1671,10 @@ function renderMyList(data) {
         <select id="autopilot-day" onchange="saveAutopilot()" style="${isEnabled ? '' : 'opacity:0.4;pointer-events:none;'}">
             <option value="sunday" ${day==='sunday'?'selected':''}>Sunday</option>
             <option value="monday" ${day==='monday'?'selected':''}>Monday</option>
-	    <option value="tuesday" ${day==='monday'?'selected':''}>Tuesday</option>
-	    <option value="wednesday" ${day==='monday'?'selected':''}>Wednesday</option>
-	    <option value="thursday" ${day==='monday'?'selected':''}>Thursday</option>
-	    <option value="friday" ${day==='monday'?'selected':''}>Friday</option>
+	    <option value="tuesday" ${day==='tuesday'?'selected':''}>Tuesday</option>
+	    <option value="wednesday" ${day==='wednesday'?'selected':''}>Wednesday</option>
+	    <option value="thursday" ${day==='thursday'?'selected':''}>Thursday</option>
+	    <option value="friday" ${day==='friday'?'selected':''}>Friday</option>
             <option value="saturday" ${day==='saturday'?'selected':''}>Saturday</option>
         </select>
         <select id="autopilot-time" onchange="saveAutopilot()" style="${isEnabled ? '' : 'opacity:0.4;pointer-events:none;'}">
