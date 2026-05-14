@@ -337,3 +337,36 @@ def get_analytics_summary() -> dict:
     except Exception as e:
         print(f"[analytics] get_analytics_summary failed: {e}")
         return {}
+# ── Saved Recipes ──────────────────────────────────────────────────────────────
+# saved_recipes schema per item:
+# {
+#   "id": "abc123",
+#   "name": "Lemon Herb Chicken",
+#   "saved_at": "2026-05-01",
+#   "ingredients": [{"upc": "...", "name": "...", "image": "...", "regular_price": 3.99, "sale_price": null, "reason": "chicken breast"}],
+#   "recipe": ["Step 1...", "Step 2..."],
+#   "last_ordered": null
+# }
+
+def get_saved_recipes(user_id: str) -> list:
+    profile = load_profile(user_id)
+    return profile.get("saved_recipes", [])
+
+def save_recipe(user_id: str, recipe: dict) -> list:
+    """Saves a recipe. Deduped by id. Returns updated list."""
+    profile = load_profile(user_id)
+    recipes = profile.get("saved_recipes", [])
+    # Remove existing with same id if re-saving
+    recipes = [r for r in recipes if r.get("id") != recipe.get("id")]
+    recipes.insert(0, recipe)
+    profile["saved_recipes"] = recipes
+    save_profile(user_id, profile)
+    return recipes
+
+def delete_recipe(user_id: str, recipe_id: str) -> list:
+    """Deletes a recipe by id. Returns updated list."""
+    profile = load_profile(user_id)
+    recipes = [r for r in profile.get("saved_recipes", []) if r.get("id") != recipe_id]
+    profile["saved_recipes"] = recipes
+    save_profile(user_id, profile)
+    return recipes

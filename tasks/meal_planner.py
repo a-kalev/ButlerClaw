@@ -1,15 +1,27 @@
 from claw import ClawTask, ClawResult, ClawSection, ClawItem, ClawAction
-from brain import plan_meals, pick_best
-from search import search_kroger, refresh_kroger_token
+from brain import plan_meals
+from search import search_kroger
 from memory import load_profile, save_profile
+
+# Common pantry staples — skip pick_best for these, just take top Kroger result
+# This saves significant Groq tokens
+_COMMON_PANTRY = {
+    "salt", "pepper", "black pepper", "olive oil", "vegetable oil", "butter",
+    "garlic", "onion", "flour", "sugar", "water", "baking soda", "baking powder",
+    "soy sauce", "vinegar", "hot sauce", "ketchup", "mustard", "mayonnaise",
+    "cumin", "paprika", "oregano", "basil", "thyme", "rosemary", "cinnamon",
+    "chili powder", "red pepper flakes", "bay leaves", "vanilla extract"
+}
 
 
 class MealPlannerTask(ClawTask):
     """
-    Plans 5 dinners using one Groq call, deduplicates ingredients,
-    searches Kroger for best matches, and returns a ClawResult ready
-    for user review before adding to cart.
-    Does NOT add to cart automatically — UI shows plan first.
+    Plans 1/3/5 dinners using one Groq call.
+    - Accepts num_meals from payload (default 5)
+    - Pantry-aware: skips ingredients user likely has from usuals
+    - Skips pick_best for common pantry items (saves tokens)
+    - Returns per-meal sections with items for selective cart add
+    - Does NOT add to cart automatically
     """
     task_type = "meal_planner"
 
@@ -21,8 +33,21 @@ class MealPlannerTask(ClawTask):
         location_id = profile.get("location_id")
         store_name = profile.get("store_name", "Kroger")
 
-        # ── Step 1: Plan 5 meals (one Groq call) ─────────────────────────────
-        meals = plan_meals(profile)
+        # ── Payload options ───────────────────────────────────────────────────
+        num_meals = int(payload.get("num_meals", 5))
+        if num_meals not in (1, 3, 5):
+            num_meals = 5
+
+        # ── Pantry awareness: usuals the user likely already has ──────────────
+        usuals = profile.get("usuals_products", [])
+        pantry_terms = [
+            (p.get("term") or p.get("name", "")).lower()
+            for p in usuals
+            if p.get("term") or p.get("name")
+        ]
+
+        # ── Step 1: Plan meals (one Groq call) ───────────────────────────────
+        meals = plan_meals(profile, num_meals=num_meals, pantry_items=pantry_terms)
         if not meals:
             return ClawResult(
                 job_id=job_id,
@@ -31,37 +56,52 @@ class MealPlannerTask(ClawTask):
                 summary="Sorry, the butler couldn't generate a meal plan. Please try again."
             )
 
-        # ── Step 2: Deduplicate ingredients across all meals ──────────────────
-        # Map ingredient → list of meal indices that need it
-        ingredient_to_meals = {}
+        # ── Step 2: Identify pantry vs shopping ingredients ───────────────────
+        # pantry_set = common staples + user's usuals
+        pantry_set = _COMMON_PANTRY | set(pantry_terms)
+
+        # ── Step 3: Deduplicate shopping ingredients across meals ─────────────
+        all_shopping_ingredients = {}
+        all_pantry_ingredients = {}
+
         for meal_idx, meal in enumerate(meals):
             for ingredient in meal.get("ingredients", []):
-                ingredient = ingredient.strip().lower()
-                if ingredient not in ingredient_to_meals:
-                    ingredient_to_meals[ingredient] = []
-                ingredient_to_meals[ingredient].append(meal_idx)
+                key = ingredient.strip().lower()
+                if key in pantry_set:
+                    all_pantry_ingredients[key] = ingredient
+                else:
+                    if key not in all_shopping_ingredients:
+                        all_shopping_ingredients[key] = ingredient
 
-        # ── Step 3: Search Kroger once per unique ingredient ──────────────────
+        # ── Step 4: Search Kroger for shopping ingredients ────────────────────
+        # Skip pick_best entirely — take top Kroger result directly (saves tokens)
         ingredient_to_product = {}
-        for ingredient in ingredient_to_meals:
-            data = search_kroger(ingredient, zip_code=zip_code, location_id=location_id)
-            best = pick_best(ingredient, ingredient, data["results"], profile)
-            if best:
-                ingredient_to_product[ingredient] = best
+        for key, ingredient in all_shopping_ingredients.items():
+            data = search_kroger(ingredient, zip_code=zip_code, location_id=location_id, limit=3)
+            results = data.get("results", [])
+            if results:
+                best = results[0]
+                ingredient_to_product[key] = best
 
-        # ── Step 4: Build ClawSections — one per meal ─────────────────────────
+        # ── Step 5: Build ClawSections — one per meal ─────────────────────────
         sections = []
-        total_items = 0
+        meal_number = 1
 
         for meal in meals:
+            meal_name = meal.get("meal", f"Meal {meal_number}")
             section = ClawSection(
-                title=f"{meal['day']} — {meal['meal']}",
+                title=f"Meal {meal_number} — {meal_name}",
                 type="meal",
                 recipe=meal.get("recipe", [])
             )
+
+            pantry_for_meal = []
             for ingredient in meal.get("ingredients", []):
-                ingredient_key = ingredient.strip().lower()
-                product = ingredient_to_product.get(ingredient_key)
+                key = ingredient.strip().lower()
+                if key in pantry_set:
+                    pantry_for_meal.append(ingredient)
+                    continue
+                product = ingredient_to_product.get(key)
                 if product:
                     section.items.append(ClawItem(
                         name=product.get("name", ""),
@@ -72,21 +112,24 @@ class MealPlannerTask(ClawTask):
                         added=False,
                         reason=ingredient
                     ))
-                    total_items += 1
-            sections.append(section)
 
-        # ── Step 5: Return plan for user review (no cart add yet) ────────────
+            # Store pantry items in section title as JSON suffix
+            # UI will parse this to show "you likely have" section
+            if pantry_for_meal:
+                import json
+                section.title = section.title + f"|||{json.dumps(pantry_for_meal)}"
+
+            sections.append(section)
+            meal_number += 1
+
+        total_shopping = len(ingredient_to_product)
         return ClawResult(
             job_id=job_id,
             task_type=self.task_type,
             status="done",
-            summary=f"5 dinners planned — {len(ingredient_to_product)} ingredients found at {store_name}.",
+            summary=f"{num_meals} dinner{'s' if num_meals > 1 else ''} planned — {total_shopping} ingredients to add at {store_name}.",
             sections=sections,
             actions=[
-                ClawAction(
-                    label="Add All to Cart",
-                    action="add_meal_plan_to_cart"
-                ),
                 ClawAction(
                     label=f"View {store_name} Cart",
                     url="https://www.kroger.com/cart"

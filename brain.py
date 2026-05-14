@@ -177,15 +177,48 @@ Rules:
     # Always preserve user_id
     updated["user_id"] = current_profile["user_id"]
     return updated
-def plan_meals(profile: dict) -> list:
-    """One Groq call — returns list of 5 meal dicts with day, meal, ingredients, recipe."""
+
+# Cuisine themes for random variety — picked by Python, not AI
+_CUISINE_THEMES = [
+    "Mediterranean and Middle Eastern",
+    "Asian fusion — Japanese, Thai, and Korean",
+    "Latin American — Mexican, Peruvian, and Brazilian",
+    "Classic American comfort food with a twist",
+    "Indian and South Asian",
+    "French and Italian European",
+    "African and Caribbean",
+    "Modern healthy — grain bowls, lean proteins, fresh vegetables",
+    "Eastern European — Polish, Greek, and Turkish",
+    "Pan-Asian — Chinese, Vietnamese, and Filipino",
+]
+
+def plan_meals(profile: dict, num_meals: int = 5, pantry_items: list = None) -> list:
+    """One Groq call — returns list of meal dicts with meal, ingredients, recipe.
+    num_meals: 1, 3, or 5
+    pantry_items: list of ingredient strings user likely already has
+    Random cuisine theme injected for variety.
+    """
+    import random
+    pantry_items = pantry_items or []
+
     profile_context = ""
     if profile.get("dietary"):
-        profile_context += f"Dietary restrictions: {', '.join(profile['dietary'])}. STRICT — exclude these ingredients entirely."
+        profile_context += f"Dietary restrictions: {', '.join(profile['dietary'])}. STRICT — MUST adhere to dietary restrictions. "
     if profile.get("preferences"):
-        profile_context += f" Preferences: {', '.join(profile['preferences'])}."
+        profile_context += f"Preferences: {', '.join(profile['preferences'])}. "
     if profile.get("family"):
-        profile_context += f" Family: {profile['family']}."
+        fam = profile["family"]
+        adults = fam.get("adults", 2)
+        kids = fam.get("kids", 0)
+        total = adults + kids
+        profile_context += f"Cooking for {total} people ({adults} adults{', ' + str(kids) + ' kids' if kids else ''}). "
+
+    # Random theme for variety
+    theme = random.choice(_CUISINE_THEMES)
+
+    pantry_note = ""
+    if pantry_items:
+        pantry_note = f"The user likely already has these items — do NOT include them as ingredients to buy: {', '.join(pantry_items[:15])}. "
 
     response = requests.post(
         "https://api.groq.com/openai/v1/chat/completions",
@@ -195,12 +228,13 @@ def plan_meals(profile: dict) -> list:
             "messages": [
                 {
                     "role": "system",
-                    "content": f"""You are a meal planning expert. Plan 5 dinners.
+                    "content": f"""You are a creative meal planning expert. Plan exactly {num_meals} dinner(s).
 {profile_context}
-Return ONLY a JSON array of exactly 5 objects. No explanation, no markdown fences.
+{pantry_note}
+This week's cuisine theme: {theme}. Lean into this theme but vary within it.
+Return ONLY a JSON array of exactly {num_meals} objects. No explanation, no markdown fences.
 Each object must follow this exact shape:
 {{
-  "day": "Monday",
   "meal": "Lemon Herb Chicken",
   "ingredients": ["chicken breast", "lemon", "olive oil", "garlic", "fresh parsley"],
   "recipe": [
@@ -213,25 +247,27 @@ Each object must follow this exact shape:
 Rules:
 - ingredients must be real Kroger-searchable product names (e.g. "chicken breast" not "protein")
 - recipe must be exactly AT MOST 5 steps, plain English, no sub-bullets
-- vary cuisines across the 5 meals — no two meals from the same cuisine
 - no repeated main protein across meals
-- days must be: Monday, Tuesday, Wednesday, Thursday, Friday
+- NEVER repeat meals from common defaults — be creative and specific within the theme
 - Return ONLY valid JSON array, nothing else"""
                 },
                 {
                     "role": "user",
-                    "content": "Plan 5 dinners for this family."
+                    "content": f"Plan {num_meals} creative dinner(s) for this family."
                 }
             ],
-            "temperature": 0.7
+            "temperature": 0.9
         }
     )
     content = response.json()["choices"][0]["message"]["content"].strip()
     content = content.replace("```json", "").replace("```", "").strip()
     try:
         meals = json.loads(content)
-        if isinstance(meals, list) and len(meals) == 5:
+        if isinstance(meals, list) and len(meals) == num_meals:
             return meals
+        # If AI returned wrong count, trim or pad
+        if isinstance(meals, list) and len(meals) > 0:
+            return meals[:num_meals]
         return []
     except json.JSONDecodeError:
         return []

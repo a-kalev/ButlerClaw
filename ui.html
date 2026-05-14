@@ -1048,7 +1048,111 @@
             font-family: 'DM Sans', sans-serif; text-align: left; width: 100%;
         }
         .home-action-btn:hover { border-color: var(--gold); background: var(--cream); }
-        .home-action-btn span:first-child { font-size: 1.6rem; flex-shrink: 0; } 
+        .home-action-btn span:first-child { font-size: 1.6rem; flex-shrink: 0; }
+        /* ── MEAL PLANNER V2 ── */
+        .meal-count-btn {
+            flex: 1; padding: 8px; border-radius: 20px;
+            border: 1.5px solid var(--border); background: transparent;
+            color: var(--ink-light); font-family: 'DM Sans', sans-serif;
+            font-size: 0.8rem; font-weight: 500; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .meal-count-btn.active {
+            border-color: var(--gold); background: var(--gold-light); color: #7a5800; font-weight: 600;
+        }
+        .meal-card {
+            margin: 14px 22px 0; background: var(--card-bg);
+            border: 1px solid var(--border-light); border-radius: 14px; overflow: hidden;
+        }
+        .meal-card-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; background: linear-gradient(135deg, #18140f, #2e200f);
+            cursor: pointer;
+        }
+        .meal-card-title {
+            font-family: 'Cormorant Garamond', serif; font-size: 1rem;
+            font-weight: 600; color: var(--warm-white);
+        }
+        .meal-card-cost {
+            font-size: 0.78rem; color: var(--gold); font-weight: 600;
+        }
+        .meal-card-body { padding: 12px 16px; }
+        .meal-recipe-steps {
+            font-size: 0.78rem; color: var(--ink-light); line-height: 1.7;
+            margin-bottom: 12px; font-style: italic;
+        }
+        .meal-pantry-section {
+            background: var(--sale-bg); border: 1px solid rgba(26,110,62,0.15);
+            border-radius: 10px; padding: 10px 12px; margin-bottom: 10px;
+        }
+        .meal-pantry-label {
+            font-size: 0.68rem; font-weight: 600; color: var(--sale);
+            text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;
+        }
+        .meal-pantry-item {
+            display: inline-block; background: white; border: 1px solid rgba(26,110,62,0.2);
+            border-radius: 20px; padding: 3px 10px; font-size: 0.72rem;
+            color: var(--sale); margin: 2px; cursor: pointer;
+        }
+        .meal-pantry-item:hover { background: var(--cream); }
+        .meal-add-btn {
+            width: 100%; background: linear-gradient(135deg, var(--sale), #155a33);
+            color: white; border: none; border-radius: 10px; padding: 11px;
+            font-size: 0.85rem; font-family: 'DM Sans', sans-serif; font-weight: 600;
+            cursor: pointer; margin-top: 10px; transition: opacity 0.2s;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .meal-add-btn:hover { opacity: 0.9; }
+        .meal-add-btn:disabled { opacity: 0.6; cursor: wait; }
+        .meal-save-btn {
+            background: none; border: 1px solid var(--gold); border-radius: 20px;
+            padding: 5px 14px; font-size: 0.75rem; color: var(--gold);
+            font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 8px;
+            transition: background 0.2s;
+        }
+        .meal-save-btn:hover { background: var(--gold-light); }
+        .meal-sub-btn {
+            background: none; border: none; font-size: 0.68rem; color: var(--ink-light);
+            cursor: pointer; text-decoration: underline; padding: 0; margin-left: 4px;
+        }
+        .recipe-book-card {
+            margin: 12px 22px 0; background: var(--card-bg);
+            border: 1px solid var(--border-light); border-radius: 14px; padding: 16px;
+        }
+        .recipe-book-name {
+            font-family: 'Cormorant Garamond', serif; font-size: 1.05rem;
+            font-weight: 600; color: var(--ink); margin-bottom: 4px;
+        }
+        .recipe-book-meta {
+            font-size: 0.75rem; color: var(--ink-light); margin-bottom: 12px;
+        }
+        .recipe-book-btns { display: flex; gap: 8px; }
+        .recipe-reorder-btn {
+            flex: 1; background: linear-gradient(135deg, var(--sale), #155a33);
+            color: white; border: none; border-radius: 20px; padding: 9px;
+            font-size: 0.82rem; font-family: 'DM Sans', sans-serif; font-weight: 600;
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .recipe-reorder-btn:hover { opacity: 0.9; }
+        .recipe-delete-btn {
+            background: none; border: 1px solid var(--border); border-radius: 20px;
+            padding: 9px 16px; font-size: 0.82rem; color: var(--ink-light);
+            font-family: 'DM Sans', sans-serif; cursor: pointer;
+        }
+        .recipe-delete-btn:hover { border-color: var(--red); color: var(--red); }
+        .sub-results {
+            background: var(--cream); border: 1px solid var(--border-light);
+            border-radius: 10px; padding: 10px; margin-top: 6px;
+        }
+        .sub-result-item {
+            display: flex; align-items: center; gap: 10px; padding: 6px 0;
+            border-bottom: 1px solid var(--border-light); cursor: pointer;
+        }
+        .sub-result-item:last-child { border-bottom: none; }
+        .sub-result-item:hover { opacity: 0.85; }
+        .sub-result-img { width: 36px; height: 36px; object-fit: contain; border-radius: 6px; background: white; flex-shrink: 0; }
+        .sub-result-name { font-size: 0.78rem; font-weight: 500; color: var(--ink); flex: 1; }
+        .sub-result-price { font-size: 0.75rem; color: var(--ink-light); flex-shrink: 0; } 
     </style>
 </head>
 <body>
@@ -1148,13 +1252,71 @@
 
 <!-- ── PAGE: MEAL PLANNER ── -->
 <div id="page-meals" class="page" style="display:none;">
-    <div class="feature-hero">
-        <img src="/icon2.png" alt="ButlerClaw" style="width:120px;height:120px;border-radius:50%;background:#000;object-fit:cover;box-shadow:0 4px 24px rgba(201,148,10,0.3);"/>
-        <h2>Meal Planner</h2>
-        <p>5 dinners planned for your family. Ingredients found at your store. Everything added to cart — one tap.</p>
-        <button onclick="runMealPlanner()" id="plan-btn" class="feature-cta-btn">🍽️ Plan My Week</button>
+
+    <!-- Tab toggle: Plan / Saved -->
+    <div style="display:flex;gap:8px;padding:14px 22px 0;">
+        <button id="meals-tab-plan" onclick="setMealsTab('plan')"
+            style="flex:1;padding:9px;border-radius:20px;border:1.5px solid var(--sale);background:var(--sale);color:white;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;">
+            🍽️ Plan
+        </button>
+        <button id="meals-tab-saved" onclick="setMealsTab('saved')"
+            style="flex:1;padding:9px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--ink-light);font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:500;cursor:pointer;">
+            📖 Saved
+        </button>
     </div>
-    <div id="meal-plan-result"></div>
+
+    <!-- Plan tab -->
+    <div id="meals-plan-tab">
+        <!-- Pre-plan card -->
+        <div id="meals-preplan" style="padding:20px 22px 0;">
+            <div style="background:var(--card-bg);border:1px solid var(--border-light);border-radius:14px;padding:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <div id="meals-profile-summary" style="font-size:0.83rem;color:var(--ink-light);line-height:1.6;"></div>
+                    <button onclick="toggleMealsSettings()" style="background:none;border:none;color:var(--gold);font-size:0.78rem;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:underline;white-space:nowrap;margin-left:8px;">Change</button>
+                </div>
+                <!-- Settings bubble -->
+                <div id="meals-settings-bubble" style="display:none;border-top:1px solid var(--border-light);padding-top:12px;margin-bottom:12px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                        <div>
+                            <div style="font-size:0.72rem;color:var(--ink-light);margin-bottom:4px;">Adults</div>
+                            <input type="number" id="meals-adults" min="1" max="10" value="2"
+                                style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:0.88rem;font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);outline:none;">
+                        </div>
+                        <div>
+                            <div style="font-size:0.72rem;color:var(--ink-light);margin-bottom:4px;">Kids</div>
+                            <input type="number" id="meals-kids" min="0" max="10" value="0"
+                                style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:0.88rem;font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);outline:none;">
+                        </div>
+                    </div>
+                    <div style="margin-bottom:10px;">
+                        <div style="font-size:0.72rem;color:var(--ink-light);margin-bottom:4px;">Dietary restrictions (comma separated)</div>
+                        <input type="text" id="meals-dietary" placeholder="e.g. gluten-free, no nuts"
+                            style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:0.85rem;font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);outline:none;">
+                    </div>
+                    <div style="margin-bottom:10px;">
+                        <div style="font-size:0.72rem;color:var(--ink-light);margin-bottom:6px;">Number of dinners</div>
+                        <div style="display:flex;gap:8px;">
+                            <button class="meal-count-btn active" id="meal-count-1" onclick="setMealCount(1)">1 dinner</button>
+                            <button class="meal-count-btn" id="meal-count-3" onclick="setMealCount(3)">3 dinners</button>
+                            <button class="meal-count-btn" id="meal-count-5" onclick="setMealCount(5)">5 dinners</button>
+                        </div>
+                    </div>
+                    <button onclick="saveMealsSettings()"
+                        style="background:var(--sale);color:white;border:none;border-radius:20px;padding:8px 20px;font-size:0.82rem;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;">
+                        Save
+                    </button>
+                </div>
+            </div>
+            <button onclick="runMealPlanner()" id="plan-btn" class="feature-cta-btn" style="width:100%;margin-top:14px;">🍽️ Plan My Dinners</button>
+        </div>
+        <div id="meal-plan-result"></div>
+    </div>
+
+    <!-- Saved tab -->
+    <div id="meals-saved-tab" style="display:none;">
+        <div id="meals-saved-content" style="padding:16px 0;"></div>
+    </div>
+
 </div>
 
 <div class="cart-bar" id="cart-bar">
@@ -1375,6 +1537,7 @@ function setPage(page) {
         setDiscoverMode(currentMode);
     } else if (page === 'meals') {
         inputWrap.style.display = 'none';
+        loadMealsProfile();
     } else if (page === 'mylist') {
         inputWrap.style.display = 'none';
         loadMyList();
@@ -1962,18 +2125,99 @@ async function renderOnboarding(container, isAddMore = false) {
 }
 
 
+// ── Meal Planner V2 ──────────────────────────────────────────────────────────
 
+let _mealCount = 1;
+let _mealsCurrentPlan = null;
+
+function setMealsTab(tab) {
+    const planTab = document.getElementById('meals-plan-tab');
+    const savedTab = document.getElementById('meals-saved-tab');
+    const planBtn = document.getElementById('meals-tab-plan');
+    const savedBtn = document.getElementById('meals-tab-saved');
+    if (tab === 'plan') {
+        planTab.style.display = '';
+        savedTab.style.display = 'none';
+        planBtn.style.background = 'var(--sale)'; planBtn.style.color = 'white'; planBtn.style.borderColor = 'var(--sale)';
+        savedBtn.style.background = 'transparent'; savedBtn.style.color = 'var(--ink-light)'; savedBtn.style.borderColor = 'var(--border)';
+    } else {
+        planTab.style.display = 'none';
+        savedTab.style.display = '';
+        savedBtn.style.background = 'var(--gold)'; savedBtn.style.color = 'var(--ink)'; savedBtn.style.borderColor = 'var(--gold)';
+        planBtn.style.background = 'transparent'; planBtn.style.color = 'var(--ink-light)'; planBtn.style.borderColor = 'var(--border)';
+        loadSavedRecipes();
+    }
+}
+
+function setMealCount(n) {
+    _mealCount = n;
+    [1,3,5].forEach(x => {
+        const btn = document.getElementById('meal-count-' + x);
+        if (btn) {
+            btn.classList.toggle('active', x === n);
+        }
+    });
+}
+
+async function loadMealsProfile() {
+    try {
+        const res = await fetch('/get-profile?user_id=' + USER_ID);
+        const profile = await res.json();
+        const fam = profile.family || {};
+        const adults = fam.adults || 2;
+        const kids = fam.kids || 0;
+        const dietary = profile.dietary || [];
+
+        // Pre-fill settings bubble inputs
+        const adultsEl = document.getElementById('meals-adults');
+        const kidsEl = document.getElementById('meals-kids');
+        const dietaryEl = document.getElementById('meals-dietary');
+        if (adultsEl) adultsEl.value = adults;
+        if (kidsEl) kidsEl.value = kids;
+        if (dietaryEl) dietaryEl.value = dietary.join(', ');
+
+        // Update summary line
+        const summaryEl = document.getElementById('meals-profile-summary');
+        if (summaryEl) {
+            const dietStr = dietary.length > 0 ? dietary.join(', ') : 'no restrictions';
+            summaryEl.textContent = `${_mealCount} dinner${_mealCount > 1 ? 's' : ''} · ${adults} adults · ${kids} kids · ${dietStr}`;
+        }
+    } catch(e) {}
+}
+
+function toggleMealsSettings() {
+    const bubble = document.getElementById('meals-settings-bubble');
+    bubble.style.display = bubble.style.display === 'none' ? '' : 'none';
+}
+
+async function saveMealsSettings() {
+    const adults = parseInt(document.getElementById('meals-adults').value) || 2;
+    const kids = parseInt(document.getElementById('meals-kids').value) || 0;
+    const dietaryRaw = document.getElementById('meals-dietary').value.trim();
+    const dietary = dietaryRaw ? dietaryRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+    await fetch('/profile/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: USER_ID, adults, kids, dietary })
+    });
+    document.getElementById('meals-settings-bubble').style.display = 'none';
+    const summaryEl = document.getElementById('meals-profile-summary');
+    if (summaryEl) {
+        const dietStr = dietary.length > 0 ? dietary.join(', ') : 'no restrictions';
+        summaryEl.textContent = `${_mealCount} dinner${_mealCount > 1 ? 's' : ''} · ${adults} adults · ${kids} kids · ${dietStr}`;
+    }
+    showCartToast('✅ Settings saved.', 'success');
+}
 
 async function runMealPlanner() {
     const btn = document.getElementById('plan-btn');
     const resultDiv = document.getElementById('meal-plan-result');
     btn.disabled = true;
-    btn.textContent = '🍽️ Planning your week…';
+    btn.textContent = `🍽️ Planning ${_mealCount} dinner${_mealCount > 1 ? 's' : ''}…`;
     resultDiv.innerHTML = `
-        <div style="text-align:center; padding:32px; color:var(--ink-light); font-style:italic; font-size:0.88rem;">
-            Your butler is planning 5 dinners and finding ingredients…
+        <div style="text-align:center;padding:32px;color:var(--ink-light);font-style:italic;font-size:0.88rem;">
+            Your butler is planning ${_mealCount} dinner${_mealCount > 1 ? 's' : ''} and finding ingredients…
         </div>`;
-
     try {
         const res = await fetch('/claw/run', {
             method: 'POST',
@@ -1981,124 +2225,541 @@ async function runMealPlanner() {
             body: JSON.stringify({
                 user_id: USER_ID,
                 task_type: 'meal_planner',
-                payload: {}
+                payload: { num_meals: _mealCount }
             })
         });
         const data = await res.json();
         btn.disabled = false;
-        btn.textContent = '🍽️ Plan My Week';
-
+        btn.textContent = '🍽️ Plan My Dinners';
         if (data.result.status === 'failed') {
             resultDiv.innerHTML = `<div class="claw-empty">Sorry, something went wrong. Please try again.</div>`;
             return;
         }
-
-        renderMealPlan(data.result, data.job_id);
-        loadClawJobs();
-
+        _mealsCurrentPlan = data.result;
+        renderMealPlan(data.result);
     } catch(e) {
         btn.disabled = false;
-        btn.textContent = '🍽️ Plan My Week';
+        btn.textContent = '🍽️ Plan My Dinners';
         resultDiv.innerHTML = `<div class="claw-empty">Something went wrong. Please try again.</div>`;
     }
 }
 
-function renderMealPlan(result, jobId) {
+function renderMealPlan(result) {
     const resultDiv = document.getElementById('meal-plan-result');
     resultDiv.innerHTML = '';
 
-    const card = document.createElement('div');
-    card.className = 'result-card';
+    const summaryDiv = document.createElement('div');
+    summaryDiv.style.cssText = 'padding:14px 22px 0;font-size:0.83rem;color:var(--ink-light);';
+    summaryDiv.textContent = result.summary;
+    resultDiv.appendChild(summaryDiv);
 
-    // Header
-    card.innerHTML = `
-        <div class="result-card-header">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9940a" stroke-width="2">
-                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2"/>
-                <path d="M18 2h3v13"/><path d="M15 9h6"/>
-            </svg>
-            <span>🍽️ ${result.summary}</span>
-        </div>
-    `;
-
-    // Add All to Cart button
-    const addAllBtn = document.createElement('button');
-    addAllBtn.className = 'add-all-btn';
-    addAllBtn.id = 'add-all-btn';
-    addAllBtn.textContent = '🛒 Add All Ingredients to Cart';
-    addAllBtn.onclick = () => addMealPlanToCart(jobId, addAllBtn, result);
-    card.appendChild(addAllBtn);
-
-    // Meals
     for (const section of result.sections || []) {
-        const mealDiv = document.createElement('div');
-        mealDiv.className = 'meal-section';
+        // Parse pantry items from title suffix
+        let titleClean = section.title;
+        let pantryItems = [];
+        if (section.title.includes('|||')) {
+            const parts = section.title.split('|||');
+            titleClean = parts[0];
+            try { pantryItems = JSON.parse(parts[1]); } catch(e) {}
+        }
 
-        // Title
-        const title = document.createElement('div');
-        title.className = 'meal-title';
-        title.textContent = section.title;
-        mealDiv.appendChild(title);
+        const card = document.createElement('div');
+        card.className = 'meal-card';
+
+        // Calculate cost from items
+        const cost = (section.items || []).reduce((sum, item) => sum + parseFloat(item.price || 0), 0);
+        const costStr = '';
+
+        // Header
+        const header = document.createElement('div');
+        header.className = 'meal-card-header';
+        header.innerHTML = `
+            <div class="meal-card-title">${titleClean}</div>
+        `;
+        card.appendChild(header);
+
+        // Body
+        const body = document.createElement('div');
+        body.className = 'meal-card-body';
 
         // Recipe steps
         if (section.recipe && section.recipe.length > 0) {
             const recipe = document.createElement('div');
-            recipe.className = 'meal-recipe';
+            recipe.className = 'meal-recipe-steps';
             recipe.innerHTML = section.recipe.map((step, i) =>
                 `<div style="margin-bottom:4px;"><span style="color:var(--gold);font-weight:600;">${i+1}.</span> ${step}</div>`
             ).join('');
-            mealDiv.appendChild(recipe);
+            body.appendChild(recipe);
         }
 
-        // Ingredient tags
-        if (section.items && section.items.length > 0) {
-            const tags = document.createElement('div');
-            tags.className = 'meal-ingredients';
-            for (const item of section.items) {
-                const tag = document.createElement('div');
-                tag.className = 'meal-ingredient-tag';
-                tag.textContent = item.reason || item.name;
-                tags.appendChild(tag);
+        // Pantry section
+        if (pantryItems.length > 0) {
+            const pantryDiv = document.createElement('div');
+            pantryDiv.className = 'meal-pantry-section';
+            pantryDiv.innerHTML = `<div class="meal-pantry-label">✅ You likely have</div>`;
+            for (const pi of pantryItems) {
+                const tag = document.createElement('span');
+                tag.className = 'meal-pantry-item';
+                tag.title = 'Tap to add to cart anyway';
+                tag.textContent = pi;
+                tag.onclick = () => addPantryItemToCart(pi, tag);
+                pantryDiv.appendChild(tag);
             }
-            mealDiv.appendChild(tags);
+            body.appendChild(pantryDiv);
         }
 
-        card.appendChild(mealDiv);
-    }
+        // Shopping items with checkboxes + substitute button
+        if (section.items && section.items.length > 0) {
+            const itemsLabel = document.createElement('div');
+            itemsLabel.style.cssText = 'font-size:0.68rem;font-weight:600;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;';
+            itemsLabel.textContent = 'To buy';
+            body.appendChild(itemsLabel);
 
-    resultDiv.appendChild(card);
+            for (const item of section.items) {
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border-light);';
+                row.dataset.upc = item.upc;
+                const priceStr = item.sale
+                    ? `<span style="color:var(--sale);font-weight:600;">$${item.price}</span>`
+                    : item.price ? `$${item.price}` : '';
+                row.innerHTML = `
+                    <input type="checkbox" class="meal-item-check" data-upc="${item.upc}"
+                        style="width:16px;height:16px;accent-color:var(--sale);flex-shrink:0;cursor:pointer;" checked
+                        onchange="updateMealCost(this)">
+                    ${item.image ? `<img src="${item.image}" style="width:36px;height:36px;object-fit:contain;border-radius:6px;background:var(--cream);flex-shrink:0;">` : ''}
+                    <div style="flex:1;">
+                        <div style="font-size:0.82rem;font-weight:500;color:var(--ink);line-height:1.3;">${item.name}</div>
+                        <div style="font-size:0.73rem;color:var(--ink-light);">${item.reason} · ${priceStr}
+                            <button class="meal-sub-btn" onclick="showSubstitutes(this,'${item.reason}','${item.upc}')">swap</button>
+                        </div>
+                        <div class="sub-results" style="display:none;"></div>
+                    </div>
+                `;
+                body.appendChild(row);
+            }
+        }
+
+        // Add this meal to cart button
+        const addBtn = document.createElement('button');
+        addBtn.className = 'meal-add-btn';
+        addBtn.innerHTML = `<span>🛒 Add to Cart</span><span class="meal-add-cost">$${cost.toFixed(2)}</span>`;
+        addBtn.onclick = () => addMealToCart(addBtn, section);
+        body.appendChild(addBtn);
+
+        // Save recipe button
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'meal-save-btn';
+        saveBtn.textContent = '💾 Save Recipe';
+        saveBtn.onclick = () => saveMealRecipe(saveBtn, titleClean, section, pantryItems);
+        body.appendChild(saveBtn);
+
+        card.appendChild(body);
+        resultDiv.appendChild(card);
+    }
 }
 
-async function addMealPlanToCart(jobId, btn, result) {
-    btn.disabled = true;
-    btn.textContent = '🛒 Adding to cart…';
+function updateMealCost(checkbox) {
+    const card = checkbox.closest('.meal-card');
+    if (!card) return;
+    const addBtn = card.querySelector('.meal-add-btn');
+    const costEl = card.querySelector('.meal-add-cost');
+    if (!costEl) return;
+    const checked = [...card.querySelectorAll('.meal-item-check:checked')];
+    // Get cost from parent row's price text — simpler: re-sum from section data
+    // Use data stored on rows
+    let total = 0;
+    card.querySelectorAll('[data-upc]').forEach(row => {
+        const cb = row.querySelector('.meal-item-check');
+        if (cb && cb.checked) {
+            const priceEl = row.querySelector('span[style*="color:var(--sale)"]') ||
+                            row.querySelector('.sub-result-price');
+            // Parse from text
+            const priceText = row.querySelector('div > div:last-child')?.textContent || '';
+            const match = priceText.match(/\$(\d+\.?\d*)/);
+            if (match) total += parseFloat(match[1]);
+        }
+    });
+    if (costEl) costEl.textContent = `$${total.toFixed(2)}`;
+}
 
-    try {
-        const res = await fetch('/claw/add-meal-plan', {
+async function addMealToCart(btn, section) {
+    const card = btn.closest('.meal-card');
+    const checkedUpcs = new Set(
+        [...card.querySelectorAll('.meal-item-check:checked')].map(cb => cb.dataset.upc)
+    );
+    if (checkedUpcs.size === 0) {
+        showCartToast('No items checked.', 'error');
+        return;
+    }
+    btn.disabled = true;
+    btn.innerHTML = '<span>🛒 Adding…</span>';
+    let added = 0;
+    for (const item of section.items || []) {
+        if (!checkedUpcs.has(item.upc)) continue;
+        const res = await fetch('/add-to-cart', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: USER_ID, job_id: jobId })
+            body: JSON.stringify({ user_id: USER_ID, upc: item.upc, product_name: item.name, quantity: 1 })
         });
         const data = await res.json();
-
         if (data.status === 'need_auth') {
             btn.disabled = false;
-            btn.textContent = '🛒 Add All Ingredients to Cart';
+            btn.innerHTML = '<span>🛒 Add to Cart</span>';
             showCartToast('🔐 Please sign in to Kroger first.', 'error');
-            window.open(`/kroger-login?user_id=${USER_ID}&upc=pending&product_name=cart`, '_blank');
+            window.open(`/kroger-login?user_id=${USER_ID}&upc=${item.upc}&product_name=${encodeURIComponent(item.name)}`, '_blank');
             return;
         }
+        if (data.status === 'success') added++;
+    }
+    btn.innerHTML = `<span>✅ ${added} added!</span>`;
+    showCartToast(`✅ ${added} ingredient${added !== 1 ? 's' : ''} added to cart!`, 'success');
+    const profile = await fetch('/get-profile?user_id=' + USER_ID).then(r => r.json());
+    showCartBar(profile.store_name || 'Kroger');
+}
 
-        btn.textContent = `✅ ${data.added} ingredients added!`;
-        showCartToast(`✅ ${data.added} ingredients added to your cart!`, 'success');
-        showCartBar(data.store_name || 'Kroger');
-
-    } catch(e) {
-        btn.disabled = false;
-        btn.textContent = '🛒 Add All Ingredients to Cart';
-        showCartToast('❌ Something went wrong. Please try again.', 'error');
+async function addPantryItemToCart(term, tag) {
+    tag.style.opacity = '0.5';
+    const res = await fetch('/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: USER_ID, term, limit: 1 })
+    });
+    const data = await res.json();
+    const results = data.results || [];
+    if (results.length === 0) {
+        showCartToast('Item not found.', 'error');
+        tag.style.opacity = '1';
+        return;
+    }
+    const item = results[0];
+    const cartRes = await fetch('/add-to-cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: USER_ID, upc: item.upc, product_name: item.name, quantity: 1 })
+    });
+    const cartData = await cartRes.json();
+    if (cartData.status === 'success') {
+        tag.textContent = '✅ ' + term;
+        showCartToast(`✅ ${item.name} added to cart.`, 'success');
+    } else {
+        tag.style.opacity = '1';
+        showCartToast('Could not add item.', 'error');
     }
 }
+
+async function showSubstitutes(btn, term, currentUpc) {
+    const subDiv = btn.closest('div').parentElement.querySelector('.sub-results');
+    if (!subDiv) return;
+    if (subDiv.style.display !== 'none') {
+        subDiv.style.display = 'none';
+        return;
+    }
+    subDiv.style.display = '';
+    subDiv.innerHTML = '<div style="font-size:0.75rem;color:var(--ink-light);padding:4px 0;">Finding alternatives…</div>';
+    try {
+        const res = await fetch('/find-stores?' + new URLSearchParams({ zip_code: '' }));
+        // Use /search directly
+        const searchRes = await fetch('/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: USER_ID, term, limit: 3 })
+        });
+        const data = await searchRes.json();
+        const results = (data.results || []).filter(r => r.upc !== currentUpc);
+        subDiv.innerHTML = '';
+        if (results.length === 0) {
+            subDiv.innerHTML = '<div style="font-size:0.75rem;color:var(--ink-light);">No alternatives found.</div>';
+            return;
+        }
+        for (const p of results) {
+            const row = document.createElement('div');
+            row.className = 'sub-result-item';
+            const priceStr = p.sale_price
+                ? `<span style="color:var(--sale);">$${p.sale_price}</span>`
+                : p.regular_price ? `$${p.regular_price}` : '';
+            row.innerHTML = `
+                ${p.image ? `<img src="${p.image}" class="sub-result-img">` : ''}
+                <div class="sub-result-name">${p.name}</div>
+                <div class="sub-result-price">${priceStr}</div>
+            `;
+            row.onclick = () => swapIngredient(p, currentUpc, btn, subDiv);
+            subDiv.appendChild(row);
+        }
+    } catch(e) {
+        subDiv.innerHTML = '<div style="font-size:0.75rem;color:var(--red);">Search failed.</div>';
+    }
+}
+
+function swapIngredient(newProduct, oldUpc, btn, subDiv) {
+    // Update the row's UPC and name
+    const row = btn.closest('[data-upc]');
+    if (row) {
+        row.dataset.upc = newProduct.upc;
+        const cb = row.querySelector('.meal-item-check');
+        if (cb) cb.dataset.upc = newProduct.upc;
+        const nameEl = row.querySelector('div > div:first-child');
+        if (nameEl) nameEl.textContent = newProduct.name;
+        const img = row.querySelector('img');
+        if (img && newProduct.image) img.src = newProduct.image;
+    }
+    subDiv.style.display = 'none';
+    showCartToast(`✅ Swapped to ${newProduct.name}`, 'success');
+}
+
+async function saveMealRecipe(btn, mealName, section, pantryItems) {
+    btn.textContent = '💾 Saving…';
+    btn.disabled = true;
+    const recipe = {
+        id: 'recipe_' + Date.now(),
+        name: mealName.replace(/^Meal \d+ — /, ''),
+        saved_at: new Date().toISOString().split('T')[0],
+        ingredients: (section.items || []).map(i => ({
+            upc: i.upc,
+            name: i.name,
+            image: i.image,
+            regular_price: i.price,
+            sale_price: null,
+            reason: i.reason
+        })),
+        pantry_items: pantryItems,
+        recipe: section.recipe || [],
+        last_ordered: null
+    };
+    await fetch('/recipes/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: USER_ID, recipe })
+    });
+    btn.textContent = '✅ Saved!';
+    showCartToast(`✅ "${recipe.name}" saved to your recipe book.`, 'success');
+}
+
+async function loadSavedRecipes() {
+    const content = document.getElementById('meals-saved-content');
+    content.innerHTML = '<div style="text-align:center;padding:32px;color:var(--ink-light);font-style:italic;font-size:0.88rem;">Loading saved recipes…</div>';
+    try {
+        const res = await fetch('/recipes?user_id=' + USER_ID);
+        const data = await res.json();
+        const recipes = data.recipes || [];
+        content.innerHTML = '';
+        if (recipes.length === 0) {
+            content.innerHTML = `
+                <div style="text-align:center;padding:40px 28px;">
+                    <div style="font-size:2rem;margin-bottom:12px;">📖</div>
+                    <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--ink);margin-bottom:8px;">No saved recipes yet</div>
+                    <div style="font-size:0.83rem;color:var(--ink-light);">Generate a meal plan and tap 💾 Save Recipe to build your recipe book.</div>
+                </div>`;
+            return;
+        }
+        for (const recipe of recipes) {
+            const card = document.createElement('div');
+            card.className = 'recipe-book-card';
+
+            const lastOrdered = recipe.last_ordered
+                ? `Last ordered: ${recipe.last_ordered}`
+                : 'Never ordered';
+            const ingredientCount = (recipe.ingredients || []).length;
+
+            // Header
+            const header = document.createElement('div');
+            header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;cursor:pointer;';
+            header.innerHTML = `
+                <div class="recipe-book-name">${recipe.name}</div>
+                <svg id="recipe-chevron-${recipe.id}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-light)" stroke-width="2.5" style="flex-shrink:0;transition:transform 0.2s;">
+                    <path d="M6 9l6 6 6-6"/>
+                </svg>`;
+            card.appendChild(header);
+
+            const meta = document.createElement('div');
+            meta.className = 'recipe-book-meta';
+            meta.textContent = `Saved ${recipe.saved_at} · ${ingredientCount} ingredients · ${lastOrdered}`;
+            card.appendChild(meta);
+
+            // Expandable body — collapsed by default
+            const body = document.createElement('div');
+            body.id = `recipe-body-${recipe.id}`;
+            body.style.display = 'none';
+
+            // Recipe steps
+            if (recipe.recipe && recipe.recipe.length > 0) {
+                const stepsDiv = document.createElement('div');
+                stepsDiv.className = 'meal-recipe-steps';
+                stepsDiv.style.marginTop = '10px';
+                stepsDiv.innerHTML = recipe.recipe.map((step, i) =>
+                    `<div style="margin-bottom:4px;"><span style="color:var(--gold);font-weight:600;">${i+1}.</span> ${step}</div>`
+                ).join('');
+                body.appendChild(stepsDiv);
+            }
+
+            // Pantry items if any
+            if (recipe.pantry_items && recipe.pantry_items.length > 0) {
+                const pantryDiv = document.createElement('div');
+                pantryDiv.className = 'meal-pantry-section';
+                pantryDiv.innerHTML = `<div class="meal-pantry-label">✅ You likely have</div>`;
+                for (const pi of recipe.pantry_items) {
+                    const tag = document.createElement('span');
+                    tag.className = 'meal-pantry-item';
+                    tag.title = 'Tap to add to cart anyway';
+                    tag.textContent = pi;
+                    tag.onclick = () => addPantryItemToCart(pi, tag);
+                    pantryDiv.appendChild(tag);
+                }
+                body.appendChild(pantryDiv);
+            }
+
+            // Ingredients with checkboxes + swap
+            if (recipe.ingredients && recipe.ingredients.length > 0) {
+                const itemsLabel = document.createElement('div');
+                itemsLabel.style.cssText = 'font-size:0.68rem;font-weight:600;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.1em;margin:10px 0 6px;';
+                itemsLabel.textContent = 'Ingredients';
+                body.appendChild(itemsLabel);
+
+                for (const item of recipe.ingredients) {
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border-light);';
+                    row.dataset.upc = item.upc;
+                    const priceStr = item.sale_price
+                        ? `<span style="color:var(--sale);font-weight:600;">$${item.sale_price}</span>`
+                        : item.regular_price ? `$${item.regular_price}` : '';
+                    row.innerHTML = `
+                        <input type="checkbox" class="saved-item-check-${recipe.id}"
+                            data-upc="${item.upc}"
+                            style="width:16px;height:16px;accent-color:var(--sale);flex-shrink:0;cursor:pointer;" checked>
+                        ${item.image ? `<img src="${item.image}" style="width:36px;height:36px;object-fit:contain;border-radius:6px;background:var(--cream);flex-shrink:0;">` : ''}
+                        <div style="flex:1;">
+                            <div style="font-size:0.82rem;font-weight:500;color:var(--ink);line-height:1.3;">${item.name}</div>
+                            <div style="font-size:0.73rem;color:var(--ink-light);display:flex;align-items:center;gap:4px;">
+                                ${item.reason || ''}
+                                <span class="live-price" style="color:var(--ink-light);">…</span>
+                                <button class="meal-sub-btn" onclick="showSubstitutes(this,'${item.reason || item.name}','${item.upc}')">swap</button>
+                            </div>
+                            <div class="sub-results" style="display:none;"></div>
+                        </div>
+                    `;
+                    body.appendChild(row);
+                }
+            }
+
+            // Add to cart button (checked items only)
+            const addBtn = document.createElement('button');
+            addBtn.className = 'meal-add-btn';
+            addBtn.style.marginTop = '12px';
+            addBtn.innerHTML = `<span>🛒 Add Checked to Cart</span><span class="meal-add-cost" style="opacity:0.5;">…</span>`;
+            addBtn.onclick = async () => {
+                const checkedUpcs = new Set(
+                    [...body.querySelectorAll(`.saved-item-check-${recipe.id}:checked`)].map(cb => cb.dataset.upc)
+                );
+                if (checkedUpcs.size === 0) { showCartToast('No items checked.', 'error'); return; }
+                addBtn.disabled = true;
+                addBtn.innerHTML = '<span>🛒 Adding…</span>';
+                let added = 0;
+                for (const item of recipe.ingredients || []) {
+                    if (!checkedUpcs.has(item.upc)) continue;
+                    const res = await fetch('/add-to-cart', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: USER_ID, upc: item.upc, product_name: item.name, quantity: 1 })
+                    });
+                    const d = await res.json();
+                    if (d.status === 'need_auth') {
+                        addBtn.disabled = false;
+                        addBtn.innerHTML = '<span>🛒 Add Checked to Cart</span>';
+                        showCartToast('🔐 Please sign in to Kroger first.', 'error');
+                        window.open(`/kroger-login?user_id=${USER_ID}&upc=${item.upc}&product_name=${encodeURIComponent(item.name)}`, '_blank');
+                        return;
+                    }
+                    if (d.status === 'success') added++;
+                }
+                addBtn.innerHTML = `<span>✅ ${added} added!</span>`;
+                showCartToast(`✅ ${added} ingredients added!`, 'success');
+                const profile = await fetch('/get-profile?user_id=' + USER_ID).then(r => r.json());
+                showCartBar(profile.store_name || 'Kroger');
+                // Update last_ordered
+                recipe.last_ordered = new Date().toISOString().split('T')[0];
+                await fetch('/recipes/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: USER_ID, recipe })
+                });
+            };
+            body.appendChild(addBtn);
+
+            // Delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'recipe-delete-btn';
+            deleteBtn.style.cssText = 'margin-top:8px;width:100%;';
+            deleteBtn.textContent = 'Delete Recipe';
+            deleteBtn.onclick = () => deleteRecipe(deleteBtn, recipe.id);
+            body.appendChild(deleteBtn);
+
+            card.appendChild(body);
+
+            // Toggle expand on header click — refresh prices on first open
+            let pricesLoaded = false;
+            header.onclick = async () => {
+                const isOpen = body.style.display !== 'none';
+                body.style.display = isOpen ? 'none' : '';
+                const chevron = document.getElementById(`recipe-chevron-${recipe.id}`);
+                if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+                if (!isOpen && !pricesLoaded) {
+                    pricesLoaded = true;
+                    // Refresh prices for all ingredients
+                    let freshTotal = 0;
+                    for (const item of recipe.ingredients || []) {
+                        const term = item.reason || item.name;
+                        try {
+                            const res = await fetch('/search', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ user_id: USER_ID, term, limit: 3 })
+                            });
+                            const data = await res.json();
+                            // Find matching UPC or take first result
+                            const results = data.results || [];
+                            const match = results.find(r => r.upc === item.upc) || results[0];
+                            if (match) {
+                                const currentPrice = match.sale_price || match.regular_price || 0;
+                                freshTotal += parseFloat(currentPrice);
+                                // Update price display in row
+                                const row = body.querySelector(`[data-upc="${item.upc}"]`);
+                                if (row) {
+                                    const priceEl = row.querySelector('.live-price');
+                                    if (priceEl) {
+                                        if (match.sale_price) {
+                                            priceEl.innerHTML = `<span style="color:var(--sale);font-weight:600;">$${match.sale_price}</span> <span style="text-decoration:line-through;opacity:0.6;font-size:0.68rem;">$${match.regular_price}</span>`;
+                                        } else {
+                                            priceEl.textContent = match.regular_price ? `$${match.regular_price}` : '';
+                                        }
+                                    }
+                                }
+                            }
+                        } catch(e) {}
+                    }
+                    // Update add to cart button cost
+                    const costEl = addBtn.querySelector('.meal-add-cost');
+                    if (costEl && freshTotal > 0) costEl.textContent = `$${freshTotal.toFixed(2)}`;
+                }
+            };
+
+            content.appendChild(card);
+        }
+    } catch(e) {
+        content.innerHTML = '<div style="text-align:center;padding:32px;color:var(--red);font-size:0.88rem;">Could not load recipes.</div>';
+    }
+}
+
+
+async function deleteRecipe(btn, recipeId) {
+    btn.textContent = 'Deleting…';
+    await fetch('/recipes/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: USER_ID, recipe_id: recipeId })
+    });
+    loadSavedRecipes();
+}
+
+
 // ── Claw send ──
 async function sendClaw() {
     const input = document.getElementById('msg');

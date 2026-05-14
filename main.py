@@ -8,7 +8,8 @@ from search import search_kroger, get_nearby_stores, refresh_kroger_token
 from memory import (load_profile, save_profile, save_job, load_job, list_jobs,
                     get_usuals_products, add_usual_product, remove_usual_product,
                     get_unusuals, add_unusual, remove_unusual, clear_unusuals,
-                    log_event, get_analytics_summary)
+                    log_event, get_analytics_summary,
+                    get_saved_recipes, save_recipe, delete_recipe)
 from claw import run_job, TASK_REGISTRY
 from push import send_push, get_public_key
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -323,6 +324,8 @@ async def get_profile(user_id: str = "anonymous"):
         "store_city": profile.get("store_city"),
         "store_state": profile.get("store_state"),
         "claws": profile.get("claws", {}),
+        "family": profile.get("family", {}),
+        "dietary": profile.get("dietary", []),
         "usuals_count": len(profile.get("usuals_products", [])),
         "unusuals_count": len(profile.get("unusuals", []))
     }
@@ -820,6 +823,118 @@ async def get_profile(user_id: str):
         "zip_code": profile.get("zip_code"),
         "claws": profile.get("claws", {})
     }
+
+# ── Recipe Book Endpoints ─────────────────────────────────────────────────────
+
+class SaveRecipeRequest(BaseModel):
+    user_id: str
+    recipe: dict
+
+class DeleteRecipeRequest(BaseModel):
+    user_id: str
+    recipe_id: str
+
+@app.get("/recipes")
+async def list_recipes(user_id: str):
+    recipes = get_saved_recipes(user_id)
+    return {"recipes": recipes}
+
+@app.post("/recipes/save")
+async def save_recipe_endpoint(req: SaveRecipeRequest):
+    updated = save_recipe(req.user_id, req.recipe)
+    return {"status": "ok", "recipes": updated}
+
+@app.post("/recipes/delete")
+async def delete_recipe_endpoint(req: DeleteRecipeRequest):
+    updated = delete_recipe(req.user_id, req.recipe_id)
+    return {"status": "ok", "recipes": updated}
+
+@app.post("/recipes/reorder")
+async def reorder_recipe(req: SaveRecipeRequest):
+    """Re-searches Kroger for fresh prices on saved recipe ingredients, adds to cart."""
+    from search import search_kroger, add_to_cart
+    profile = load_profile(req.user_id)
+    access_token = profile.get("kroger_access_token")
+
+    if not access_token:
+        refresh_token = profile.get("kroger_refresh_token")
+        if refresh_token:
+            new_access, new_refresh = refresh_kroger_token(refresh_token)
+            if new_access:
+                profile["kroger_access_token"] = new_access
+                if new_refresh:
+                    profile["kroger_refresh_token"] = new_refresh
+                save_profile(req.user_id, profile)
+                access_token = new_access
+        if not access_token:
+            return {"status": "need_auth"}
+
+    recipe = req.recipe
+    zip_code = profile.get("zip_code", "10001")
+    location_id = profile.get("location_id")
+    ingredients = recipe.get("ingredients", [])
+
+    added = 0
+    failed = 0
+    seen_upcs = set()
+
+    for item in ingredients:
+        # Re-search Kroger for fresh prices
+        term = item.get("reason") or item.get("name", "")
+        data = search_kroger(term, zip_code=zip_code, location_id=location_id, limit=1)
+        results = data.get("results", [])
+        if not results:
+            failed += 1
+            continue
+        upc = results[0].get("upc")
+        if not upc or upc in seen_upcs:
+            continue
+        seen_upcs.add(upc)
+        status_code, _ = add_to_cart(
+            upc=upc, quantity=1,
+            location_id=location_id,
+            access_token=access_token
+        )
+        if status_code in (200, 201, 204):
+            added += 1
+        else:
+            failed += 1
+
+    # Update last_ordered date
+    from datetime import date
+    recipe["last_ordered"] = str(date.today())
+    save_recipe(req.user_id, recipe)
+
+    return {
+        "status": "success",
+        "added": added,
+        "failed": failed,
+        "store_name": profile.get("store_name", "Kroger")
+    }
+
+# ── Profile Update Endpoint ───────────────────────────────────────────────────
+
+class ProfileUpdateRequest(BaseModel):
+    user_id: str
+    adults: Optional[int] = None
+    kids: Optional[int] = None
+    dietary: Optional[List[str]] = None
+
+@app.post("/profile/update")
+async def update_profile(req: ProfileUpdateRequest):
+    """Updates family size and dietary restrictions from meal planner settings bubble."""
+    profile = load_profile(req.user_id)
+    if req.adults is not None or req.kids is not None:
+        fam = profile.get("family", {})
+        if req.adults is not None:
+            fam["adults"] = req.adults
+        if req.kids is not None:
+            fam["kids"] = req.kids
+        profile["family"] = fam
+    if req.dietary is not None:
+        profile["dietary"] = req.dietary
+    save_profile(req.user_id, profile)
+    return {"status": "ok"}
 
 if __name__ == "__main__":
     import uvicorn
