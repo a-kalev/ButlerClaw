@@ -1187,6 +1187,7 @@
             <h2>Good day.</h2>
             <p>I can take care of your shopping. What's on your mind?</p>
             <p id="home-store-line" style="font-size:0.88rem;color:var(--ink-light);">Loading your store…</p>
+            <p id="home-autopilot-line" style="font-size:0.82rem;color:var(--ink-light);display:none;margin-top:4px;"></p>
         </div>
         <div style="display:flex;flex-direction:column;gap:10px;padding:0 22px 16px;">
             <button class="home-action-btn" onclick="setPage('mylist')">
@@ -1582,7 +1583,7 @@ async function loadHome() {
         const storeLine = document.getElementById('home-store-line');
         if (storeLine) {
             if (data.store_name) {
-                storeLine.innerHTML = `📍 Your store: <strong>${data.store_name}</strong> &nbsp;<button onclick="showChangeStore()" style="background:none;border:none;color:var(--gold);font-size:0.78rem;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:underline;padding:0;">Change</button>`;
+                storeLine.innerHTML = `📍 Your store: <strong>${data.store_name}</strong> &nbsp;<button onclick="showChangeStore()" style="background:none;border:none;color:var(--gold);font-size:0.78rem;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:underline;padding:0;">Change</button> &nbsp;·&nbsp; <a href="https://www.kroger.com/cart" target="_blank" style="color:var(--gold);font-size:0.78rem;text-decoration:underline;">Go to Cart</a>`;
             } else {
                 storeLine.innerHTML = `<span style="color:var(--red);">No store selected</span> &nbsp;<button onclick="showChangeStore()" style="background:none;border:none;color:var(--gold);font-size:0.78rem;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:underline;padding:0;">Choose a store →</button>`;
             }
@@ -1593,6 +1594,26 @@ async function loadHome() {
         if (listCount) listCount.textContent = total > 0
             ? `${usuals.length} weekly · ${unusuals.length} sometimes`
             : 'No items yet — tap to build your list';
+
+        // Autopilot next run
+        const autopilot = data.autopilot || {};
+        const autopilotEl = document.getElementById('home-autopilot-line');
+        if (autopilotEl) {
+            if (autopilot.enabled) {
+                const dayNames = { sunday:'Sunday', monday:'Monday', tuesday:'Tuesday', wednesday:'Wednesday', thursday:'Thursday', friday:'Friday', saturday:'Saturday' };
+                const timeStr = autopilot.time || '18:00';
+                const [h, m] = timeStr.split(':');
+                const hour = parseInt(h);
+                const ampm = hour >= 12 ? 'pm' : 'am';
+                const hour12 = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+                const dayStr = dayNames[autopilot.day] || autopilot.day;
+                const modeStr = autopilot.mode === 'auto' ? 'Auto-add' : 'Reminder';
+                autopilotEl.textContent = `⏰ ${modeStr} every ${dayStr} at ${hour12}${m !== '00' ? ':'+m : ''}${ampm}`;
+                autopilotEl.style.display = 'block';
+            } else {
+                autopilotEl.style.display = 'none';
+            }
+        } 
 
         // Sale alert
         const onSale = usuals.filter(p => p.sale_price && p.sale_price !== p.regular_price);

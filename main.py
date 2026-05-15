@@ -127,6 +127,7 @@ def run_weekly_autopilot():
                             location_id=location_id,
                             access_token=access_token
                         )
+                        print(f"[scheduler] add_to_cart upc={upc} status={status_code}")
                         if status_code in (200, 201, 204):
                             added += 1
 
