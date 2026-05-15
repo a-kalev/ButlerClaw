@@ -1583,7 +1583,8 @@ async function loadHome() {
         const storeLine = document.getElementById('home-store-line');
         if (storeLine) {
             if (data.store_name) {
-                storeLine.innerHTML = `📍 Your store: <strong>${data.store_name}</strong> &nbsp;<button onclick="showChangeStore()" style="background:none;border:none;color:var(--gold);font-size:0.78rem;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:underline;padding:0;">Change</button> &nbsp;·&nbsp; <a href="https://www.kroger.com/cart" target="_blank" style="color:var(--gold);font-size:0.78rem;text-decoration:underline;">Go to Cart</a>`;
+                const cartUrl = getCartUrl(data.store_name);
+                storeLine.innerHTML = `📍 Your store: <strong>${data.store_name}</strong> &nbsp;<button onclick="showChangeStore()" style="background:none;border:none;color:var(--gold);font-size:0.78rem;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:underline;padding:0;">Change</button> &nbsp;·&nbsp; <a href="${cartUrl}" target="_blank" style="color:var(--gold);font-size:0.78rem;text-decoration:underline;">Go to Cart</a>`;
             } else {
                 storeLine.innerHTML = `<span style="color:var(--red);">No store selected</span> &nbsp;<button onclick="showChangeStore()" style="background:none;border:none;color:var(--gold);font-size:0.78rem;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:underline;padding:0;">Choose a store →</button>`;
             }
@@ -1703,7 +1704,7 @@ function renderMyList(data) {
 	    <option value="10:00" ${time==='10:00'?'selected':''}>10am</option>
             <option value="12:00" ${time==='12:00'?'selected':''}>12pm</option>
 	    <option value="14:00" ${time==='14:00'?'selected':''}>2pm</option>
-	    <option value="16:00" ${time==='q6:00'?'selected':''}>4pm</option>
+	    <option value="16:00" ${time==='16:00'?'selected':''}>4pm</option>
             <option value="18:00" ${time==='18:00'?'selected':''}>6pm</option>
             <option value="20:00" ${time==='20:00'?'selected':''}>8pm</option>
         </select>
