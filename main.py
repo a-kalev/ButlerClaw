@@ -122,13 +122,11 @@ def run_weekly_autopilot():
                         if not upc or upc in seen:
                             continue
                         seen.add(upc)
-                        status_code, _ = add_to_cart(
-                            upc=upc, quantity=1,
-                            location_id=location_id,
-                            access_token=access_token
+                        success, profile = add_to_cart_with_refresh(
+                            user_id, upc, 1, profile
                         )
-                        print(f"[scheduler] add_to_cart upc={upc} status={status_code}")
-                        if status_code in (200, 201, 204):
+                        print(f"[scheduler] add_to_cart upc={upc} success={success}")
+                        if success:
                             added += 1
 
                     if subscription:
@@ -431,6 +429,43 @@ async def kroger_callback(code: str, state: str = "anonymous"):
             return RedirectResponse(f"/?cart_error=add_failed")
 
     return RedirectResponse("/")
+
+def add_to_cart_with_refresh(user_id: str, upc: str, quantity: int, profile: dict) -> tuple:
+    """Shared logic: add to cart with automatic token refresh on 401.
+    Returns (success: bool, updated_profile: dict)"""
+    from search import add_to_cart
+    access_token = profile.get("kroger_access_token")
+    location_id = profile.get("location_id")
+
+    if not access_token:
+        refresh_token = profile.get("kroger_refresh_token")
+        if refresh_token:
+            new_access, new_refresh = refresh_kroger_token(refresh_token)
+            if new_access:
+                profile["kroger_access_token"] = new_access
+                if new_refresh:
+                    profile["kroger_refresh_token"] = new_refresh
+                save_profile(user_id, profile)
+                access_token = new_access
+        if not access_token:
+            return False, profile
+
+    status, _ = add_to_cart(upc=upc, quantity=quantity,
+                             location_id=location_id, access_token=access_token)
+
+    if status == 401:
+        refresh_token = profile.get("kroger_refresh_token")
+        if refresh_token:
+            new_access, new_refresh = refresh_kroger_token(refresh_token)
+            if new_access:
+                profile["kroger_access_token"] = new_access
+                if new_refresh:
+                    profile["kroger_refresh_token"] = new_refresh
+                save_profile(user_id, profile)
+                status, _ = add_to_cart(upc=upc, quantity=quantity,
+                                        location_id=location_id, access_token=new_access)
+
+    return status in (200, 201, 204), profile
 
 @app.post("/add-to-cart")
 async def add_to_cart_endpoint(req: AddToCartRequest):
