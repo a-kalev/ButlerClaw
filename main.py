@@ -326,7 +326,8 @@ async def get_profile(user_id: str = "anonymous"):
         "family": profile.get("family", {}),
         "dietary": profile.get("dietary", []),
         "usuals_count": len(profile.get("usuals_products", [])),
-        "unusuals_count": len(profile.get("unusuals", []))
+        "unusuals_count": len(profile.get("unusuals", [])),
+        "has_push_subscription": profile.get("push_subscription") is not None
     }
 @app.get("/")
 async def root():

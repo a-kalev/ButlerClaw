@@ -1449,7 +1449,14 @@ async function setupPush() {
     try {
         const reg = await navigator.serviceWorker.register('/sw.js');
         const existing = await reg.pushManager.getSubscription();
-        if (existing) return;
+        if (existing) {
+            // Check if server has our subscription — if not, unsubscribe and re-subscribe
+            const profileRes = await fetch('/get-profile?user_id=' + USER_ID);
+            const profile = await profileRes.json();
+            if (profile.has_push_subscription) return;
+            // Server lost our subscription — unsubscribe and re-register
+            await existing.unsubscribe();
+        }
         const keyRes = await fetch('/push/public-key');
         const { public_key } = await keyRes.json();
         if (!public_key) return;
