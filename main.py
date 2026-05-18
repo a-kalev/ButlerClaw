@@ -89,13 +89,15 @@ def run_weekly_autopilot():
                 if mode == "remind":
                     # Push notification only
                     if subscription:
-                        send_push(
+                        push_result = send_push(
                             subscription=subscription,
-                            title="🛒 Time to shop your usuals!",
-                            body=f"Your {count} weekly item{'s are' if count != 1 else ' is'} ready to add to your {store_name} cart.",
+                            title="🛒 Your usuals are in the cart!",
+                            body=f"Added {added} item{'s' if added != 1 else ''} to your {store_name} cart.",
                             url="/?page=mylist"
                         )
-                        print(f"[scheduler] Autopilot remind sent to {user_id}")
+                        print(f"[scheduler] Autopilot auto-added {added} items for {user_id}, push_sent={push_result}")
+                    else:
+                        print(f"[scheduler] Autopilot auto-added {added} items for {user_id}, no subscription")
 
                 elif mode == "auto":
                     # Auto-add to cart
