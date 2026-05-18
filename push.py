@@ -19,12 +19,10 @@ def send_push(subscription: dict, title: str, body: str, url: str = "/") -> bool
     if not subscription or not VAPID_PUBLIC_KEY:
         return False
     try:
-        with open(VAPID_PRIVATE_KEY_PATH, "r") as f:
-            private_key = f.read().strip()
         webpush(
             subscription_info=subscription,
             data=json.dumps({"title": title, "body": body, "url": url}),
-            vapid_private_key=private_key,
+            vapid_private_key=VAPID_PRIVATE_KEY_PATH,
             vapid_claims=VAPID_CLAIMS
         )
         return True
