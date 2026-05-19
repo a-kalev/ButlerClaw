@@ -91,13 +91,13 @@ def run_weekly_autopilot():
                     if subscription:
                         push_result = send_push(
                             subscription=subscription,
-                            title="🛒 Your usuals are in the cart!",
-                            body=f"Added {added} item{'s' if added != 1 else ''} to your {store_name} cart.",
+                            title="🛒 Time to shop your usuals!",
+                            body=f"Your {count} weekly item{'s are' if count != 1 else ' is'} ready to add to your {store_name} cart.",
                             url="/?page=mylist"
                         )
-                        print(f"[scheduler] Autopilot auto-added {added} items for {user_id}, push_sent={push_result}")
+                        print(f"[scheduler] Autopilot remind sent to {user_id}, push_sent={push_result}")
                     else:
-                        print(f"[scheduler] Autopilot auto-added {added} items for {user_id}, no subscription")
+                        print(f"[scheduler] Autopilot remind: no subscription for {user_id}")
 
                 elif mode == "auto":
                     # Auto-add to cart
@@ -132,13 +132,15 @@ def run_weekly_autopilot():
                             added += 1
 
                     if subscription:
-                        send_push(
+                        push_result = send_push(
                             subscription=subscription,
                             title="🛒 Your usuals are in the cart!",
                             body=f"Added {added} item{'s' if added != 1 else ''} to your {store_name} cart.",
                             url="/?page=mylist"
                         )
-                        print(f"[scheduler] Autopilot auto-added {added} items for {user_id}")
+                        print(f"[scheduler] Autopilot auto-added {added} items for {user_id}, push_sent={push_result}")
+                    else:
+                        print(f"[scheduler] Autopilot auto-added {added} items for {user_id}, no subscription")
 
                 # Save last run time
                 profile["autopilot_last_run"] = now_utc.isoformat()
